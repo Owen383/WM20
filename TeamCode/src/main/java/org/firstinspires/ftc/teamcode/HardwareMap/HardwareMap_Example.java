@@ -37,31 +37,29 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 /**
  * This is NOT an opmode.
  *
- * This class can be used to define all the specific hardware for a single robot.
- * In this case that robot is a Pushbot.
- * See PushbotTeleopTank_Iterative and others classes starting with "Pushbot" for usage examples.
- *
  * This hardware class assumes the following device names have been configured on the robot:
- * Note:  All names are lower case and some have single spaces between words.
+ * CHAWKS:  Naming convention is camel case!
  *
- * Motor channel:  Left  drive motor:        "left_drive"
- * Motor channel:  Right drive motor:        "right_drive"
- * Motor channel:  Manipulator drive motor:  "left_arm"
- * Servo channel:  Servo to open left claw:  "left_hand"
- * Servo channel:  Servo to open right claw: "right_hand"
+ *          front
+ *    (LF)--------(RF)
+ *    |    robot   |
+ *   (LB)--------(RB)
+ *        back
+ *
+ * Motor channel:  Left Front (LF) drive motor:        "leftFront"
+ * Motor channel:  Right Front (RF) drive motor:        "rightFront"
+ * Motor channel:  Left Back (LB) drive motor:        "leftBack"
+ * Motor channel:  Right Back (RB) drive motor:        "rightBack"
  */
 public class HardwareMap_Example
 {
     /* Public OpMode members. */
-    public DcMotor  leftDrive   = null;
-    public DcMotor  rightDrive  = null;
-    public DcMotor  leftArm     = null;
-    public Servo    leftClaw    = null;
-    public Servo    rightClaw   = null;
-
-    public static final double MID_SERVO       =  0.5 ;
-    public static final double ARM_UP_POWER    =  0.45 ;
-    public static final double ARM_DOWN_POWER  = -0.45 ;
+    // CHAWKS: The Robot Parts need to be established here
+    public DcMotor  leftFront   = null;
+    public DcMotor  rightFront  = null;
+    public DcMotor  leftBack   = null;
+    public DcMotor  rightBack  = null;
+    /////////////////////////////////////
 
     /* local OpMode members. */
     HardwareMap hwMap           =  null;
@@ -72,34 +70,56 @@ public class HardwareMap_Example
 
     }
 
-    /* Initialize standard Hardware interfaces */
+    // Initialize standard Hardware interfaces
+    /*
+        CHAWKS: On Driver Station - [INIT] - Button //
+     */
     public void init(HardwareMap ahwMap) {
         // Save reference to Hardware map
+        // Do Not ever remove this.
         hwMap = ahwMap;
 
         // Define and Initialize Motors
-        leftDrive  = hwMap.get(DcMotor.class, "left_drive");
-        rightDrive = hwMap.get(DcMotor.class, "right_drive");
-        leftArm    = hwMap.get(DcMotor.class, "left_arm");
-        leftDrive.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-        rightDrive.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
+        /*
+            CHAWKS: The deviceName should ALWAYS ALWAYS ALWAYS
+                    match the part name to avoid confusion
+         */
+        leftFront  = hwMap.get(DcMotor.class, "leftFront");
+        rightFront  = hwMap.get(DcMotor.class, "rightFront");
+        leftBack = hwMap.get(DcMotor.class, "leftBack");
+        rightBack = hwMap.get(DcMotor.class, "rightBack");
 
-        // Set all motors to zero power
-        leftDrive.setPower(0);
-        rightDrive.setPower(0);
-        leftArm.setPower(0);
+
+        // Set Direction/Motion for Motors
+        /*
+            CHAWKS: Why are we reversing the Right Wheels?
+         */
+        leftFront.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
+        rightFront.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
+        leftBack.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
+        rightBack.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
+
+        // Set all motors to ZERO! power
+        /*
+            CHAWKS: Why do we set the power to zero?
+         */
+        leftFront.setPower(0);
+        rightFront.setPower(0);
+        leftBack.setPower(0);
+        rightBack.setPower(0);
 
         // Set all motors to run without encoders.
-        // May want to use RUN_USING_ENCODERS if encoders are installed.
-        leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        leftArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        /*
+            CHAWKS: Encoder Exercise!
+         */
 
-        // Define and initialize ALL installed servos.
-        leftClaw  = hwMap.get(Servo.class, "left_hand");
-        rightClaw = hwMap.get(Servo.class, "right_hand");
-        leftClaw.setPosition(MID_SERVO);
-        rightClaw.setPosition(MID_SERVO);
+        //leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        //rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        //leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
     }
  }
 

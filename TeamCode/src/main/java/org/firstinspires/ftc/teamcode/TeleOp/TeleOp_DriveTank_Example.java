@@ -40,54 +40,69 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.HardwareMap.HardwareMap_Example;
 
 /**
- * This OpMode uses the common Pushbot hardware class to define the devices on the robot.
- * All device access is managed through the HardwarePushbot class.
- * The code is structured as a LinearOpMode
- *
- * This particular OpMode executes a POV Game style Teleop for a PushBot
- * In this mode the left stick moves the robot FWD and back, the Right stick turns left and right.
- * It raises and lowers the claw using the Gampad Y and A buttons respectively.
- * It also opens and closes the claws slowly using the left and right Bumper buttons.
- *
- * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
+ * This OpMode uses the HardwareMap_Example class to define the devices on the robot.
  */
-
+// CHAWKS: Name it something useful!
 @TeleOp(name="Name This TeleOp Mode here", group="A Group needs a Name")
+// CHAWKS: What does @Disabled mean? what happens if we remove it?
 @Disabled
 public class TeleOp_DriveTank_Example extends LinearOpMode {
 
-    /* Declare OpMode members. */
+    /* CHAWKS: Call and declare the robot here */
     HardwareMap_Example robot   = new HardwareMap_Example();    // Use the Example hardware map
-    double          clawOffset      = 0;                       // Servo mid position
-    final double    CLAW_SPEED      = 0.02 ;                   // sets rate to move servo
 
+    // MUST HAVE
     @Override
     public void runOpMode() {
+
+        // Below are VARIABLES that must be outside the "while (opModeIsActive())" loop
         double left;
         double right;
         double drive;
         double turn;
         double max;
 
-        /* Initialize the hardware variables.
-         * The init() method of the hardware class does all the work here
-         */
-        robot.init(hardwareMap);
-
-        // Send telemetry message to signify robot waiting;
-        telemetry.addData("Say", "Hello Driver");    //
+        /*
+            CHAWKS: On Driver Station, telemetry will be display!
+                    How is this useful for debugging?
+        */
+        // Send telemetry message to Driver Station
+        telemetry.addData("Status: ", "Hit [Init] to Initialize ze bot");    //
         telemetry.update();
 
-        // Wait for the game to start (driver presses PLAY)
+        /*
+            CHAWKS: Step 0. Initialize OUR ROBOT
+        */
+        // MUST HAVE THIS LINE BELOW
+        robot.init(hardwareMap);
+
+
+        // Send telemetry message to "Driver Station" signify robot waiting;
+        telemetry.addData("Status: ", "Hit [PLAY] to start!");    //
+        telemetry.update();
+
+        /*
+            CHAWKS: Step 1. Hit Play to run through the code!
+        */
+        // MUST HAVE THIS LINE BELOW
         waitForStart();
 
-        // run until the end of the match (driver presses STOP)
+
+        /*
+            CHAWKS: Remember opModeIsActive?! It's a loop!
+        */
+        // run until the end of the match (driver presses [STOP])
+        // MUST HAVE!
         while (opModeIsActive()) {
 
             // Run wheels in POV mode (note: The joystick goes negative when pushed forwards, so negate it)
             // In this mode the Left stick moves the robot fwd and back, the Right stick turns left and right.
             // This way it's also easy to just drive straight, or just turn.
+
+            /*
+                CHAWKS: gamepad1 vs. gamepad2
+                        what are our limits?
+           */
             drive = -gamepad1.left_stick_y;
             turn  =  gamepad1.right_stick_x;
 
@@ -104,36 +119,31 @@ public class TeleOp_DriveTank_Example extends LinearOpMode {
             }
 
             // Output the safe vales to the motor drives.
-            robot.leftDrive.setPower(left);
-            robot.rightDrive.setPower(right);
+            /*
+                CHAWKS: Put in the power number!
+                        Which motors are we missing?
+                        What would happen if you apply power to half the wheels?
+             */
+            robot.leftFront.setPower(left);
+            robot.rightFront.setPower(right);
 
             // Use gamepad left & right Bumpers to open and close the claw
-            if (gamepad1.right_bumper)
-                clawOffset += CLAW_SPEED;
-            else if (gamepad1.left_bumper)
-                clawOffset -= CLAW_SPEED;
-
-            // Move both servos to new position.  Assume servos are mirror image of each other.
-            clawOffset = Range.clip(clawOffset, -0.5, 0.5);
-            robot.leftClaw.setPosition(robot.MID_SERVO + clawOffset);
-            robot.rightClaw.setPosition(robot.MID_SERVO - clawOffset);
-
-            // Use gamepad buttons to move arm up (Y) and down (A)
-            if (gamepad1.y)
-                robot.leftArm.setPower(robot.ARM_UP_POWER);
-            else if (gamepad1.a)
-                robot.leftArm.setPower(robot.ARM_DOWN_POWER);
-            else
-                robot.leftArm.setPower(0.0);
+            //if (gamepad1.right_bumper)
+                //clawOffset += CLAW_SPEED;
+            //else if (gamepad1.left_bumper)
+                //clawOffset -= CLAW_SPEED;
 
             // Send telemetry message to signify robot running;
-            telemetry.addData("claw",  "Offset = %.2f", clawOffset);
             telemetry.addData("left",  "%.2f", left);
             telemetry.addData("right", "%.2f", right);
             telemetry.update();
 
             // Pace this loop so jaw action is reasonable speed.
             sleep(50);
+
+            /*
+                CHAWKS: We are the end! What happens now?
+            */
         }
     }
 }
