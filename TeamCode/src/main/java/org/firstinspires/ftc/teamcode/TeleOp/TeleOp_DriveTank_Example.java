@@ -124,8 +124,8 @@ public class TeleOp_DriveTank_Example extends LinearOpMode {
                         Which motors are we missing?
                         What would happen if you apply power to half the wheels?
              */
-            robot.leftFront.setPower(left);
-            robot.rightFront.setPower(right);
+            robot.leftBack.setPower(left);
+            robot.rightBack.setPower(right);
 
             // Use gamepad left & right Bumpers to open and close the claw
             //if (gamepad1.right_bumper)
