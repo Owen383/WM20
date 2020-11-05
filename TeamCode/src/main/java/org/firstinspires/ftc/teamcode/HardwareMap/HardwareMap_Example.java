@@ -101,7 +101,6 @@ abstract public class HardwareMap_Example extends LinearOpMode
                     match the part name to avoid confusion
          */
 
-
         leftFront  = hwMap.get(DcMotor.class, "leftFront");
         rightFront  = hwMap.get(DcMotor.class, "rightFront");
 
@@ -119,12 +118,13 @@ abstract public class HardwareMap_Example extends LinearOpMode
         leftBack.setDirection(DcMotor.Direction.FORWARD);
         rightBack.setDirection(DcMotor.Direction.REVERSE);
 
+
         // Set all motors to ZERO! power
         /*
             CHAWKS: Why do we set the power to zero?
          */
-        leftFront.setPower(0);
-        rightFront.setPower(0);
+        //leftFront.setPower(0);
+        //rightFront.setPower(0);
         leftBack.setPower(0);
         rightBack.setPower(0);
 

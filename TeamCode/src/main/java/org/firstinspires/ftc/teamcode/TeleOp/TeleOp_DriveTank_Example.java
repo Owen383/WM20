@@ -124,8 +124,11 @@ public class TeleOp_DriveTank_Example extends HardwareMap_Example {
                         Which motors are we missing?
                         What would happen if you apply power to half the wheels?
              */
+
             leftBack.setPower(left);
             rightBack.setPower(right);
+
+
 
             // Use gamepad left & right Bumpers to open and close the claw
             //if (gamepad1.right_bumper)
