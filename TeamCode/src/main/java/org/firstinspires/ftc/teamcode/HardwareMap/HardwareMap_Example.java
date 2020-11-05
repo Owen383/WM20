@@ -29,7 +29,9 @@
 
 package org.firstinspires.ftc.teamcode.HardwareMap;
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -51,12 +53,12 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Motor channel:  Left Back (LB) drive motor:        "leftBack"
  * Motor channel:  Right Back (RB) drive motor:        "rightBack"
  */
-public class HardwareMap_Example
+abstract public class HardwareMap_Example extends LinearOpMode
 {
     /* Public OpMode members. */
     // CHAWKS: The Robot Parts need to be established here
-    //public DcMotor  leftFront   = null;
-    //public DcMotor  rightFront  = null;
+    public DcMotor  leftFront   = null;
+    public DcMotor  rightFront  = null;
     public DcMotor  leftBack   = null;
     public DcMotor  rightBack  = null;
     /////////////////////////////////////
@@ -86,8 +88,8 @@ public class HardwareMap_Example
          */
         //leftFront.setDirection(DcMotor.Direction);
 
-        //leftFront  = hwMap.get(DcMotor.class, "leftFront");
-        //rightFront  = hwMap.get(DcMotor.class, "rightFront");
+        leftFront  = hwMap.get(DcMotor.class, "leftFront");
+        rightFront  = hwMap.get(DcMotor.class, "rightFront");
         leftBack = hwMap.get(DcMotor.class, "leftBack");
         rightBack = hwMap.get(DcMotor.class, "rightBack");
 
@@ -96,8 +98,8 @@ public class HardwareMap_Example
         /*
             CHAWKS: Why are we reversing the Right Wheels?
          */
-        //leftFront.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-        //rightFront.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
+        leftFront.setDirection(DcMotor.Direction.REVERSE); // Set to REVERSE if using AndyMark motors
+        rightFront.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
         leftBack.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
         rightBack.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
 
