@@ -21,7 +21,7 @@ public class JerseyGirlHolonomic extends HardwareMap_Example {
         double rStickY;
         double lStickX;
         double targetAngle;
-        double mag1;
+        double mag1; // mag is for magnitude
         double mag2;
         double rotationPower;
         double maxPower;
