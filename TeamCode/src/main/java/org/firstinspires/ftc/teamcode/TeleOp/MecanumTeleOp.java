@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.TeleOp;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -6,13 +6,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.Controller;
+import org.firstinspires.ftc.teamcode.Gyro;
+import org.firstinspires.ftc.teamcode.HardwareClasses.MecanumControl;
+import org.firstinspires.ftc.teamcode.PID;
 import org.firstinspires.ftc.utilities.IMU;
 import org.firstinspires.ftc.utilities.Utils;
-
-import java.lang.Math;
 
 /**
  * First TeleOp

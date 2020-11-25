@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.owen;
+package org.firstinspires.ftc.teamcode.Autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.MecanumControl;
+import org.firstinspires.ftc.teamcode.HardwareClasses.MecanumControl;
 import org.firstinspires.ftc.utilities.Utils;
 
 @TeleOp(name = "State Machine Test", group="Autp")
