@@ -6,7 +6,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.HardwareClasses.Intake;
 import org.firstinspires.ftc.teamcode.HardwareClasses.MecanumControl;
+import org.firstinspires.ftc.teamcode.HardwareClasses.Shooter;
+import org.firstinspires.ftc.teamcode.HardwareClasses.WobbleGripper;
 import org.firstinspires.ftc.utilities.Utils;
 
 @TeleOp(name = "State Machine Test", group="Autp")
@@ -82,6 +85,8 @@ public class StateMachineAuto extends OpMode {
     private Servo gripper;
     private Servo lifter;
 
+    private org.firstinspires.ftc.utilities.IMU imu;
+
     MecanumControl robot;
     Shooter shooter;
     Intake intake;
@@ -103,7 +108,9 @@ public class StateMachineAuto extends OpMode {
         gripper = hardwareMap.get(Servo.class, "gripper");
         lifter = hardwareMap.get(Servo.class, "lifter");
 
-        robot = new MecanumControl(frontLeft, frontRight, backLeft, backRight);
+        imu = new org.firstinspires.ftc.utilities.IMU("imu");
+
+        robot = new MecanumControl(frontLeft, frontRight, backLeft, backRight, imu);
 
         shooter  = new Shooter(shooterOne, shooterTwo, feeder);
         intake = new Intake(intakeDrive, tubingDeploy);

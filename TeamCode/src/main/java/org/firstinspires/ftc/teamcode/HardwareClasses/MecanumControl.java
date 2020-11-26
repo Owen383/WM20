@@ -10,7 +10,7 @@ public class MecanumControl {
     private DcMotor backLeft;
     private DcMotor backRight;
 
-    private Gyro gyro;
+    public Gyro gyro;
 
     private double drive;
     private double strafe;

@@ -3,11 +3,13 @@ package org.firstinspires.ftc.teamcode.HardwareClasses;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.owen.RingBuffer;
+
 public class Shooter {
 
     private DcMotor shooterOne;
     private DcMotor shooterTwo;
-    private Servo feeder;
+//    private Servo feeder;
 
     private static final double TICKS_PER_ROTATION = 3000;
     private static final double RING_FEED = 0.5;
@@ -23,16 +25,31 @@ public class Shooter {
     public Shooter(DcMotor shooterOne, DcMotor shooterTwo, Servo feeder) {
         this.shooterOne = shooterOne;
         this.shooterTwo = shooterTwo;
-        this.feeder = feeder;
+//        this.feeder = feeder;
     }
 
-    public void feedRing(){ feeder.setPosition(RING_FEED); }
+    public Shooter(DcMotor shooterOne, DcMotor shooterTwo) {
+        this.shooterOne = shooterOne;
+        this.shooterTwo = shooterTwo;
+    }
 
-    public boolean isRingFed(){ return RING_FEED - SERVO_RANGE <= feeder.getPosition() && feeder.getPosition() <= RING_FEED + SERVO_RANGE; }
+    public void feedRing(){
+    //    feeder.setPosition(RING_FEED);
+    }
 
-    public void resetFeeder(){ feeder.setPosition(RESET); }
+    public boolean isRingFed(){
+        return true;
+                //RING_FEED - SERVO_RANGE <= feeder.getPosition() && feeder.getPosition() <= RING_FEED + SERVO_RANGE;
+    }
 
-    public boolean isReset(){ return RESET- SERVO_RANGE <= feeder.getPosition() && feeder.getPosition() <= RESET + SERVO_RANGE; }
+    public void resetFeeder(){
+      //  feeder.setPosition(RESET);
+    }
+
+    public boolean isReset(){
+        return true;
+        //RESET- SERVO_RANGE <= feeder.getPosition() && feeder.getPosition() <= RESET + SERVO_RANGE;
+         }
 
     public void setPower(double power){
         shooterOne.setPower(power);

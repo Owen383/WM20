@@ -7,6 +7,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Controller;
+import org.firstinspires.ftc.teamcode.HardwareClasses.Intake;
+import org.firstinspires.ftc.teamcode.HardwareClasses.Shooter;
+import org.firstinspires.ftc.teamcode.HardwareClasses.WobbleGripper;
 
 @TeleOp(name = "Operator TeleOp", group ="TeleOp")
 //@Disabled

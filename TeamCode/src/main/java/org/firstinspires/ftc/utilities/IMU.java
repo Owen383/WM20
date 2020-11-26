@@ -14,7 +14,7 @@ public class IMU {
     private double deltaAngle;
 
     public IMU(String deviceName) {
-        HardwareMap hardwareMap = Utils.getHardwareMap();
+        HardwareMap hardwareMap = org.firstinspires.ftc.utilities.Utils.getHardwareMap();
 
         imu = hardwareMap.get(BNO055IMU.class, deviceName);
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();

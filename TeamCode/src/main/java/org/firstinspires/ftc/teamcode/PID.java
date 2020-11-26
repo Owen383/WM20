@@ -1,13 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.dashboard.FtcDashboard;
+//import com.acmerobotics.dashboard.FtcDashboard;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-import java.util.ArrayList;
 
 public class PID {
-    private Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
+    //private Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
 
     private double proportional;
     private double integral;
@@ -17,7 +15,7 @@ public class PID {
     private double previousError = 0;
     private long previousTime;
 
-    private PIDRingBuffer errors;
+    private org.firstinspires.ftc.teamcode.PIDRingBuffer errors;
 
     private boolean debugMode;
 
@@ -30,25 +28,25 @@ public class PID {
         this.integral = integral;
         this.derivative = derivative;
         this.debugMode = debugMode;
-        errors = new PIDRingBuffer(integralLength);
+        errors = new org.firstinspires.ftc.teamcode.PIDRingBuffer(integralLength);
         previousTime = System.currentTimeMillis();
     }
 
     public Double update(double error){
-        PIDRingBuffer.IntegralDerivativePair integralDerivativePair = errors.update(error, System.currentTimeMillis());
+        org.firstinspires.ftc.teamcode.PIDRingBuffer.IntegralDerivativePair integralDerivativePair = errors.update(error, System.currentTimeMillis());
         integralSum += error;
         long currentTime = System.currentTimeMillis();
         double deltaTime = (currentTime - previousTime) / 1000.0;
         double rateOfChange = (error - previousError) / deltaTime;
         previousTime = currentTime;
         previousError = error;
-        double pComponent = error * Constants.p;
-        double iComponent = integralSum * Constants.i;
-        double dComponent = (rateOfChange * Constants.d);
+        double pComponent = error * org.firstinspires.ftc.teamcode.Constants.p;
+        double iComponent = integralSum * org.firstinspires.ftc.teamcode.Constants.i;
+        double dComponent = (rateOfChange * org.firstinspires.ftc.teamcode.Constants.d);
         if(debugMode){
-            dashboardTelemetry.addData("Proportional", pComponent);
-            dashboardTelemetry.addData("Integral", iComponent);
-            dashboardTelemetry.addData("Derivative", dComponent);
+//            dashboardTelemetry.addData("Proportional", pComponent);
+//            dashboardTelemetry.addData("Integral", iComponent);
+//            dashboardTelemetry.addData("Derivative", dComponent);
         }
         this.result = pComponent + iComponent + dComponent;
         return result;
