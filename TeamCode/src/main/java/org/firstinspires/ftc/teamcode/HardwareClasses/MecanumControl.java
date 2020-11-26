@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.HardwareClasses;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.PID;
 import org.firstinspires.ftc.teamcode.teamcodecopy.Gyro;
 
 public class MecanumControl {
@@ -10,13 +11,15 @@ public class MecanumControl {
     private DcMotor frontRight;
     private DcMotor backLeft;
     private DcMotor backRight;
-    
-    //private Gyro gyro;
+    private PID rotationPID = new PID(.017, .00022, .0022, 60, false);
+
+    private Gyro gyro;
 
     private double drive;
     private double strafe;
     private double turn;
     private double power;
+    private double targetAngle;
 
     private final static double ACCEL_RATE = 0.001;
 
@@ -25,21 +28,14 @@ public class MecanumControl {
         this.frontRight = frontRight;
         this.backLeft = backLeft;
         this.backRight = backRight;
-        //this.gyro = gyro;
+        this.gyro = gyro;
     }
 
-    public MecanumControl(DcMotor frontLeft, DcMotor frontRight, DcMotor backLeft, DcMotor backRight) {
-        this.frontLeft = frontLeft;
-        this.frontRight = frontRight;
-        this.backLeft = backLeft;
-        this.backRight = backRight;
-        //this.gyro = gyro;
-    }
-
-    public void setPower(double drive, double strafe, double turn, double power){
+    public void setPower(double drive, double strafe, double deltaAngle, double power){
         this.drive = drive * power;
         this.strafe = strafe * power;
-        this.turn = turn * Math.abs(power);
+        targetAngle += deltaAngle * 3.5;
+        turn = rotationPID.update(targetAngle - gyro.getRawAngle()) * 3 * Math.abs(power);
         this.power = power;
 
         double flPower = drive - strafe - turn;
