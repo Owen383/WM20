@@ -1,8 +1,6 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.teamcodecopy;
 
 import org.firstinspires.ftc.utilities.IMU;
-
-import static java.lang.Math.floorMod;
 
 public class Gyro {
 
@@ -28,7 +26,7 @@ public class Gyro {
 
     //TODO Make this work with more accuracy. Curse you, floorMod(int)!
     public double absToRel(int targetAbsoluteAngle){
-        double retval = MathUtils.floorModDouble((360) + imu.getAngle(), 360);
+        double retval = org.firstinspires.ftc.teamcode.MathUtils.floorModDouble((360) + imu.getAngle(), 360);
         return (retval <= 180) ? retval : -1 * (360 - retval);
     }
 }

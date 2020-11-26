@@ -25,7 +25,6 @@ public class Shooter {
     public Shooter(DcMotor shooterOne, DcMotor shooterTwo, Servo feeder) {
         this.shooterOne = shooterOne;
         this.shooterTwo = shooterTwo;
-//        this.feeder = feeder;
     }
 
     public Shooter(DcMotor shooterOne, DcMotor shooterTwo) {

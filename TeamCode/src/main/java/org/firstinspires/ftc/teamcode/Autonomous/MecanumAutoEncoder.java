@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.Controller;
 import org.firstinspires.ftc.utilities.IMU;
 import org.firstinspires.ftc.utilities.Utils;
 
@@ -12,11 +13,25 @@ import org.firstinspires.ftc.utilities.Utils;
 public class MecanumAutoEncoder extends LinearOpMode {
 
     private IMU imu;
-    private Servo servo0;
+    private Servo gripper;
+    private Servo arm;
+    private Controller controller;
+
+    private double armPos;
+
+    private enum GripperState {
+        STATE_GRIP,
+        STATE_EJECT,
+        STATE_OPEN
+    }
+
+    private GripperState currentGripperState = GripperState.STATE_OPEN;
 
     public void initialize(){
 
-        servo0 = hardwareMap.get(Servo.class, "servo0");
+        gripper = hardwareMap.get(Servo.class, "gripper");
+        arm = hardwareMap.get(Servo.class, "arm");
+        controller = new Controller(gamepad1);
 
         // IMU (Inertial Measurement Unit)
         Utils.setHardwareMap(hardwareMap);
@@ -32,14 +47,51 @@ public class MecanumAutoEncoder extends LinearOpMode {
 
         while (opModeIsActive()){
 
-            if (gamepad1.a) servo0.setPosition(1);
-            if (gamepad1.b) servo0.setPosition(0);
+            switch(currentGripperState){
+                case STATE_OPEN:
+                    if(controller.rightBumperPress()){
+                        newState(GripperState.STATE_GRIP);
+                    }else if(controller.leftBumperPress()) {
+                        newState(GripperState.STATE_EJECT);
+                    }else{
+                        gripper.setPosition(0.75);
+                        telemetry.addData("state = ", "open");
+                    }
+                    break;
+                case STATE_GRIP:
+                    if(controller.rightBumperPress()){
+                        newState(GripperState.STATE_OPEN);
+                    }else if(controller.leftBumperPress()) {
+                        newState(GripperState.STATE_EJECT);
+                    }else{
+                        gripper.setPosition(0.25);
+                        telemetry.addData("state = ", "grip");
+                    }
+                    break;
+                case STATE_EJECT:
+                    if(.95 <= gripper.getPosition()){
+                        newState(GripperState.STATE_OPEN);
+                    }else{
+                        gripper.setPosition(0.99);
+                        telemetry.addData("state = ", "EJECT");
+                    }
+                    break;
+
+            }
 
 
-            telemetry.addData("Initialized", true);
-            telemetry.addData("Servo0", servo0.getPosition());
-            telemetry.addData("IMU", imu.getAngle());
+
+            armPos = armPos + (gamepad1.right_trigger)/1000 - (gamepad1.left_trigger)/1000;
+            if (armPos >= .75){ armPos = .75; }
+            if (armPos <= .35){ armPos = .35; }
+            arm.setPosition(armPos);
+            telemetry.addData("arm position = ", armPos);
+            telemetry.update();
         }
 
+
+    }
+    private void newState(GripperState newState){
+        currentGripperState = newState;
     }
 }

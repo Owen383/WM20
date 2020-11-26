@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.utilities.IMU;
 import org.firstinspires.ftc.utilities.Utils;
 
-@TeleOp(name="StrafeAuto", group="")
+@TeleOp(name="StrafeAuto", group="Autonomous Linear Opmode")
 //@Disabled
 public class StrafeAuto extends LinearOpMode {
 

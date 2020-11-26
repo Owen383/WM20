@@ -14,10 +14,18 @@ public class Controller {
     private int jTr;
     private int jCr;
     private int jCi;
+    private int jBL;
+    private int jBR;
     private boolean toggleSq = false;
     private boolean toggleTr = false;
     private boolean toggleCr = false;
     private boolean toggleCi = false;
+    private boolean pressSq = false;
+    private boolean pressTr = false;
+    private boolean pressCr = false;
+    private boolean pressCi = false;
+    private boolean pressBL = false;
+    private boolean pressBR = false;
 
     public Controller(Gamepad gamepad) {
         this.gamepad = gamepad;
@@ -93,9 +101,8 @@ public class Controller {
     }
 
     public boolean squarePress(){
-        boolean pressSq = false;
 
-        if (gamepad.x){ jSq = jSq++; }
+        if (gamepad.x){jSq++; }
         else{ jSq = 0; }
 
         if(jSq == 1){ pressSq = true; }
@@ -104,9 +111,8 @@ public class Controller {
     }
 
     public boolean trianglePress(){
-        boolean pressTr = false;
 
-        if (gamepad.y){ jTr = jTr++; }
+        if (gamepad.y){ jTr++; }
         else{ jTr = 0; }
 
         if(jTr == 1){ pressTr = true; }
@@ -115,9 +121,8 @@ public class Controller {
     }
 
     public boolean crossPress(){
-        boolean pressCr = false;
 
-        if (gamepad.a){ jCr = jCr++; }
+        if (gamepad.a){jCr++; }
         else{ jCr = 0; }
 
         if(jCi == 1){ pressCr = true; }
@@ -126,9 +131,8 @@ public class Controller {
     }
 
     public boolean circlePress(){
-        boolean pressCi = false;
 
-        if (gamepad.b){ jCi = jCi++; }
+        if (gamepad.b){ jCi++; }
         else{ jCi = 0; }
 
         if(jCi == 1){ pressCi = true; }
@@ -166,6 +170,28 @@ public class Controller {
 
     public boolean rightBumper(){
         return gamepad.right_bumper;
+    }
+
+    public boolean leftBumperPress(){
+
+        if (gamepad.left_bumper){ jBL++; }
+        else{ jBL = 0; }
+
+        if(jBL == 1){ pressBL = true; }
+        else{ pressBL = false; }
+
+        return (pressBL);
+    }
+
+    public boolean rightBumperPress(){
+
+        if (gamepad.right_bumper){ jBR++; }
+        else{ jBR = 0; }
+
+        if(jBR == 1){ pressBR = true; }
+        else{ pressBR = false; }
+
+        return (pressBR);
     }
 
     public float leftTrigger(){

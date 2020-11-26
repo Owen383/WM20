@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Controller;
-import org.firstinspires.ftc.teamcode.Gyro;
+import org.firstinspires.ftc.teamcode.teamcodecopy.Gyro;
 import org.firstinspires.ftc.teamcode.HardwareClasses.MecanumControl;
 import org.firstinspires.ftc.teamcode.PID;
 import org.firstinspires.ftc.utilities.IMU;
@@ -38,7 +38,7 @@ public class MecanumTeleOp extends OpMode {
     private double imuDatum;
     private boolean aLastCycle = false;
     private double gain = .00456;
-    private Gyro gyro = new Gyro(imu, 0);
+    private Gyro gyro;
     private boolean absoluteControlMode = true;
     private double gyroSetPoint = 0;
     private Telemetry dashboardTelemetry;
@@ -59,6 +59,8 @@ public class MecanumTeleOp extends OpMode {
         backRight = hardwareMap.get(DcMotor.class, "backright");
         shooterOne = hardwareMap.get(DcMotor.class, "shooterone");
         shooterTwo = hardwareMap.get(DcMotor.class, "shootertwo");
+
+         gyro = new Gyro(imu, 0);
 
        // goalLift = hardwareMap.get(Servo.class, "goallift");
         goalLock = hardwareMap.get(Servo.class, "goallock");
@@ -112,7 +114,7 @@ public class MecanumTeleOp extends OpMode {
         System.out.println("github pls work");
 
         Controller controller = new Controller(gamepad1);
-        MecanumControl mecanumControl = new MecanumControl(frontLeft, frontRight, backLeft, backRight, imu);
+        MecanumControl mecanumControl = new MecanumControl(frontLeft, frontRight, backLeft, backRight, gyro);
         Gyro gyro = new Gyro(imu, imuDatum);
 
         Controller.Thumbstick rightThumbstick = controller.getRightThumbstick();

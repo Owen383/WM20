@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.HardwareClasses.Intake;
 import org.firstinspires.ftc.teamcode.HardwareClasses.MecanumControl;
 import org.firstinspires.ftc.teamcode.HardwareClasses.Shooter;
 import org.firstinspires.ftc.teamcode.HardwareClasses.WobbleGripper;
+import org.firstinspires.ftc.teamcode.teamcodecopy.Gyro;
 import org.firstinspires.ftc.utilities.Utils;
 
 @TeleOp(name = "State Machine Test", group="Autp")
@@ -86,6 +87,7 @@ public class StateMachineAuto extends OpMode {
     private Servo lifter;
 
     private org.firstinspires.ftc.utilities.IMU imu;
+    private Gyro gyro;
 
     MecanumControl robot;
     Shooter shooter;
@@ -109,8 +111,9 @@ public class StateMachineAuto extends OpMode {
         lifter = hardwareMap.get(Servo.class, "lifter");
 
         imu = new org.firstinspires.ftc.utilities.IMU("imu");
+        gyro = new Gyro(imu, 0);
 
-        robot = new MecanumControl(frontLeft, frontRight, backLeft, backRight, imu);
+        robot = new MecanumControl(frontLeft, frontRight, backLeft, backRight, gyro);
 
         shooter  = new Shooter(shooterOne, shooterTwo, feeder);
         intake = new Intake(intakeDrive, tubingDeploy);
