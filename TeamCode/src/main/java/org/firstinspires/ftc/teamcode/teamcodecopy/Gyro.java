@@ -16,6 +16,10 @@ public class Gyro {
         this.imu = imu;
     }
 
+    public void setDatum(double datum) {
+        this.datum = datum;
+    }
+
     public double getRawAngle() {
         return imu.getAngle() - datum;
     }

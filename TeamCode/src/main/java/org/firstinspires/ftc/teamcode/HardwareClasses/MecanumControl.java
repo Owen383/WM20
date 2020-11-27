@@ -31,17 +31,22 @@ public class MecanumControl {
         this.gyro = gyro;
     }
 
+    public void resetGyro(){
+        gyro.setDatum(gyro.getRawAngle());
+
+    }
+
     public void setPower(double drive, double strafe, double deltaAngle, double power){
         this.drive = drive * power;
         this.strafe = strafe * power;
-        targetAngle += deltaAngle * 3.5;
+        targetAngle += deltaAngle * 3.5 * Math.abs(power);
         turn = rotationPID.update(targetAngle - gyro.getRawAngle()) * 3 * Math.abs(power);
         this.power = power;
 
-        double flPower = drive - strafe - turn;
-        double frPower = drive + strafe + turn;
-        double blPower = drive + strafe - turn;
-        double brPower = drive - strafe + turn;
+        double flPower = this.drive - this.strafe - turn;
+        double frPower = this.drive + this.strafe + turn;
+        double blPower = this.drive + this.strafe - turn;
+        double brPower = this.drive - this.strafe + turn;
         double maxPower = Math.abs(Math.max(Math.max(Math.abs(flPower), Math.abs(frPower)), Math.max(Math.abs(blPower), Math.abs(brPower))));
 
         if (maxPower > 1) {

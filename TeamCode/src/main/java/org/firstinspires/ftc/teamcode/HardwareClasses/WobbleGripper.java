@@ -4,11 +4,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class WobbleGripper {
 
-    private Servo gripper;
-    private Servo lifter;
+    public Servo gripper;
+    public Servo lifter;
     private double armPosition;
     private static final double GRIPPER_CLOSED = 0.0;
-    private static final double GRIPPER_EJECT = 1.0;
+    private static final double GRIPPER_EJECT = .9;
     private static final double GRIPPER_OPEN = 0.5;
     private static final double ARM_UP = .75;
     private static final double ARM_DOWN = 0.35;
@@ -24,7 +24,7 @@ public class WobbleGripper {
     public void eject(){ gripper.setPosition(GRIPPER_EJECT); }
 
     public boolean isEjected(){
-        return GRIPPER_EJECT <= gripper.getPosition();
+        return (gripper.getPosition() > GRIPPER_EJECT);
     }
 
     public void open(){ gripper.setPosition(GRIPPER_OPEN);}

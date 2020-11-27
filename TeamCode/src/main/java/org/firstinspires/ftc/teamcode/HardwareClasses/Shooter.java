@@ -11,7 +11,7 @@ public class Shooter {
     private DcMotor shooterTwo;
 //    private Servo feeder;
 
-    private static final double TICKS_PER_ROTATION = 3000;
+    private static final double TICKS_PER_ROTATION = 12.5;
     private static final double RING_FEED = 0.5;
     private static final double RESET = 0.0;
     private static final int TOP_GOAL = 5000;
