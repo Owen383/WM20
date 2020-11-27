@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.HardwareClasses.WobbleGripper;
 import org.firstinspires.ftc.teamcode.teamcodecopy.Gyro;
 import org.firstinspires.ftc.utilities.Utils;
 
-@TeleOp(name = "State Machine Test", group="Autp")
+@Autonomous(name = "State Machine Test", group="Auto")
 
 public class StateMachineAuto extends OpMode {
 

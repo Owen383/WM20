@@ -11,7 +11,7 @@ public class MecanumControl {
     private DcMotor frontRight;
     private DcMotor backLeft;
     private DcMotor backRight;
-    private PID rotationPID = new PID(.017, .00022, .0022, 60, false);
+    private PID rotationPID = new PID(.015, 0.0, .0004, 60, false);
 
     private Gyro gyro;
 
@@ -20,6 +20,7 @@ public class MecanumControl {
     private double turn;
     private double power;
     private double targetAngle;
+    private int i = 0;
 
     private final static double ACCEL_RATE = 0.001;
 
@@ -35,18 +36,26 @@ public class MecanumControl {
         gyro.setDatum(gyro.getRawAngle());
 
     }
+    
+    public void goTo90(){
+    
+    }
 
-    public void setPower(double drive, double strafe, double deltaAngle, double power){
+    public void setPowerTele(double drive, double strafe, double turn, double power){
         this.drive = drive * power;
         this.strafe = strafe * power;
-        targetAngle += deltaAngle * 3.5 * Math.abs(power);
-        turn = rotationPID.update(targetAngle - gyro.getRawAngle()) * 3 * Math.abs(power);
+        if (turn != 0){
+            targetAngle = gyro.getRawAngle();
+            this.turn = turn * power;
+        }else {
+            this.turn = rotationPID.update(targetAngle - gyro.getRawAngle()) * 3 * Math.abs(power);
+        }
         this.power = power;
 
-        double flPower = this.drive - this.strafe - turn;
-        double frPower = this.drive + this.strafe + turn;
-        double blPower = this.drive + this.strafe - turn;
-        double brPower = this.drive - this.strafe + turn;
+        double flPower = this.drive - this.strafe - this.turn;
+        double frPower = this.drive + this.strafe + this.turn;
+        double blPower = this.drive + this.strafe - this.turn;
+        double brPower = this.drive - this.strafe + this.turn;
         double maxPower = Math.abs(Math.max(Math.max(Math.abs(flPower), Math.abs(frPower)), Math.max(Math.abs(blPower), Math.abs(brPower))));
 
         if (maxPower > 1) {
@@ -61,9 +70,35 @@ public class MecanumControl {
         this.backRight.setPower(brPower);
     }
 
-    public void setPower(double drive, double strafe, double turn){
-        setPower(drive, strafe, turn,1.0);
+    public void setPowerTele(double drive, double strafe, double turn){
+        setPowerTele(drive, strafe, turn,1.0);
     }
+    
+    public void setPowerAuto(double drive, double strafe, double targetAngle, double power){
+        this.drive = drive * power;
+        this.strafe = strafe * power;
+        this.targetAngle = targetAngle;
+        turn = rotationPID.update(targetAngle - gyro.getRawAngle()) * 3 * Math.abs(power);
+        this.power = power;
+        
+        double flPower = this.drive - this.strafe - turn;
+        double frPower = this.drive + this.strafe + turn;
+        double blPower = this.drive + this.strafe - turn;
+        double brPower = this.drive - this.strafe + turn;
+        double maxPower = Math.abs(Math.max(Math.max(Math.abs(flPower), Math.abs(frPower)), Math.max(Math.abs(blPower), Math.abs(brPower))));
+        
+        if (maxPower > 1) {
+            flPower = flPower / maxPower;
+            frPower = frPower / maxPower;
+            blPower = blPower / maxPower;
+            brPower = brPower / maxPower;
+        }
+        this.frontLeft.setPower(flPower);
+        this.frontRight.setPower(frPower);
+        this.backLeft.setPower(blPower);
+        this.backRight.setPower(brPower);
+    }
+    
 
 //    public double adjustedTicks(){
 //        double measuredTicks = ((Math.abs(frontRight.getCurrentPosition()) + Math.abs(frontLeft.getCurrentPosition()) + Math.abs(backRight.getCurrentPosition()) + Math.abs(backLeft.getCurrentPosition())) / 4.0);

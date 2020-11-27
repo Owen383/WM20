@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.HardwareClasses;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.PID;
 import org.firstinspires.ftc.teamcode.owen.RingBuffer;
@@ -10,47 +11,46 @@ public class Shooter {
 
     private DcMotor shooterOne;
     private DcMotor shooterTwo;
-//    private Servo feeder;
+    public Servo feeder;
     private PID shooterPID = new PID(.005, .0000, .000, 100, false);
 
     private static final double TICKS_PER_ROTATION = 28;
-    private static final double RING_FEED = 0.5;
-    private static final double RESET = 0.0;
-    private static final int TOP_GOAL = 5000;
-    private static final int POWER_SHOT = 4000;
-    private static final double GAIN = 0.01;
-    private static final double SERVO_RANGE = .01;
+    private static final double RING_FEED = 0.15;
+    private static final double RESET = .35;
+    private static final int TOP_GOAL = 4000;
+    private static final int POWER_SHOT = 3000;
+    private static final double DELAY = .4;
 
     RingBuffer timeRing = new RingBuffer(20);
     RingBuffer positionRing = new RingBuffer(20);
+    
+    public ElapsedTime feederDelay = new ElapsedTime();
 
     public Shooter(DcMotor shooterOne, DcMotor shooterTwo, Servo feeder) {
         this.shooterOne = shooterOne;
         this.shooterTwo = shooterTwo;
-    }
-
-    public Shooter(DcMotor shooterOne, DcMotor shooterTwo) {
-        this.shooterOne = shooterOne;
-        this.shooterTwo = shooterTwo;
+        this.feeder = feeder;
     }
 
     public void feedRing(){
-    //    feeder.setPosition(RING_FEED);
+        feeder.setPosition(RING_FEED);
     }
 
     public boolean isRingFed(){
-        return true;
-                //RING_FEED - SERVO_RANGE <= feeder.getPosition() && feeder.getPosition() <= RING_FEED + SERVO_RANGE;
+        return (feeder.getPosition() == RING_FEED);
     }
 
     public void resetFeeder(){
-      //  feeder.setPosition(RESET);
+        feeder.setPosition(RESET);
     }
 
     public boolean isReset(){
-        return true;
-        //RESET- SERVO_RANGE <= feeder.getPosition() && feeder.getPosition() <= RESET + SERVO_RANGE;
-         }
+        return (feeder.getPosition() == RESET);
+    }
+    
+    public boolean isDelayComplete(){
+        return (feederDelay.seconds() > DELAY);
+    }
 
     public void setPower(double power){
         shooterOne.setPower(power);
