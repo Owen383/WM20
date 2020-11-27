@@ -166,12 +166,14 @@ public class wobbleop extends OpMode {
       case STATE_GRIP:
         if(operator.rightBumperPress()){
           newState(GripperState.STATE_OPEN);
-        }else if(operator.leftBumperPress()) {
+          break;
+        }if(operator.leftBumperPress()) {
           newState(GripperState.STATE_EJECT);
-        }else{
-          wobble.grip();
-          telemetry.addData("state = ", "grip");
+          break;
         }
+        wobble.grip();
+        telemetry.addData("state = ", "grip");
+
         break;
       case STATE_EJECT:
         if(wobble.isEjected()){
@@ -194,7 +196,7 @@ public class wobbleop extends OpMode {
           newState(ShooterState.STATE_TOP_GOAL);
           break;
         }
-          shooter.setPower(0);
+          shooter.setRPM(0);
           telemetry.addData("shooter state = ", "off");
 
         break;
@@ -206,7 +208,7 @@ public class wobbleop extends OpMode {
           newState(ShooterState.STATE_OFF);
           break;
         }
-          shooter.setPower(-.75);
+          shooter.setRPM(4000);
           telemetry.addData("shooter state = ", "power shot");
         break;
       case STATE_POWER_SHOT:
@@ -217,13 +219,13 @@ public class wobbleop extends OpMode {
           newState(ShooterState.STATE_OFF);
           break;
         }
-          shooter.setPower(-1.0);
+          shooter.setRPM(2500);
           telemetry.addData("shooter state = ", "top goal");
 
         break;
     }
 
-    telemetry.addData("rpm = ",shooter.getRPM());
+    telemetry.addData("rpm = ", Math.abs(shooter.getRPM()));
 
     if (driver.crossToggle()){
       intake.setPower(1.0);

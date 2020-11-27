@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.HardwareClasses;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.PID;
 import org.firstinspires.ftc.teamcode.owen.RingBuffer;
 
 public class Shooter {
@@ -10,8 +11,9 @@ public class Shooter {
     private DcMotor shooterOne;
     private DcMotor shooterTwo;
 //    private Servo feeder;
+    private PID shooterPID = new PID(.005, .0000, .000, 100, false);
 
-    private static final double TICKS_PER_ROTATION = 12.5;
+    private static final double TICKS_PER_ROTATION = 28;
     private static final double RING_FEED = 0.5;
     private static final double RESET = 0.0;
     private static final int TOP_GOAL = 5000;
@@ -83,7 +85,15 @@ public class Shooter {
         return retVal;
     }
 
-    public void setRPM(int targetRPM){ setPower((getRPM() - targetRPM) * GAIN); }
+    public void setRPM(int targetRPM){
+        if (shooterPID.update(targetRPM - getRPM()) > 1){
+            setPower(1.0);
+        }else if (shooterPID.getResult() < -1){
+            setPower(-1.0);
+        }else {
+            setPower(shooterPID.getResult());
+        }
+    }
 
     public void topGoal(){ setRPM(TOP_GOAL); }
 

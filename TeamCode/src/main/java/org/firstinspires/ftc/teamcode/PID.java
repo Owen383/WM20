@@ -40,9 +40,9 @@ public class PID {
         double rateOfChange = (error - previousError) / deltaTime;
         previousTime = currentTime;
         previousError = error;
-        double pComponent = error * org.firstinspires.ftc.teamcode.Constants.p;
-        double iComponent = integralSum * org.firstinspires.ftc.teamcode.Constants.i;
-        double dComponent = (rateOfChange * org.firstinspires.ftc.teamcode.Constants.d);
+        double pComponent = error * proportional;
+        double iComponent = integralSum * integral;
+        double dComponent = (rateOfChange * derivative);
         if(debugMode){
 //            dashboardTelemetry.addData("Proportional", pComponent);
 //            dashboardTelemetry.addData("Integral", iComponent);
