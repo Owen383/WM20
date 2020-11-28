@@ -35,11 +35,15 @@ public class WobbleGripper {
     public boolean isOpen(){
         return gripper.getPosition() == GRIPPER_OPEN;
     }
+    
+    public void stopArm(){
+        lifter.setPosition(lifter.getPosition());
+    }
 
     public void armControl(double deltaPosition){
         double currentTime = System.currentTimeMillis();
         double deltaMili = currentTime - timeRing.getValue(currentTime);
-        armPosition += deltaPosition * deltaMili;
+        armPosition = lifter.getPosition() + deltaPosition * deltaMili;
         if(armPosition < ARM_UP){ armPosition = ARM_UP; }
         else if (armPosition > ARM_DOWN){ armPosition = ARM_DOWN; }
         lifter.setPosition(armPosition);

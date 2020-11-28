@@ -15,7 +15,7 @@ public class Shooter {
     private PID shooterPID = new PID(.005, .0000, .000, 100, false);
 
     private static final double TICKS_PER_ROTATION = 28;
-    private static final double RING_FEED = 0.15;
+    private static final double RING_FEED = 0.25;
     private static final double RESET = .35;
     private static final int TOP_GOAL = 4000;
     private static final int POWER_SHOT = 3000;

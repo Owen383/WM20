@@ -50,6 +50,7 @@ public class FullTeleOp extends OpMode {
 	
 	private final ElapsedTime runtime = new ElapsedTime();
 	private final ElapsedTime feederTime = new ElapsedTime();
+	private final ElapsedTime armTime = new ElapsedTime();
 	private Gyro gyro;
 	private Controller driver;
 	private Controller operator;
@@ -59,6 +60,7 @@ public class FullTeleOp extends OpMode {
 	private DcMotor intake;
 	private Servo feeder;
 	private GripperState currentGripperState = GripperState.STATE_OPEN;
+	private ArmState currentArmState = ArmState.STATE_FULL_CONTROL;
 	private ShooterState currentShooterState = ShooterState.STATE_OFF;
 	private FeederState currentFeederState = FeederState.STATE_IDLE;
 	private DriveState currentDriveState = DriveState.STATE_FULL_CONTROL;
@@ -156,8 +158,49 @@ public class FullTeleOp extends OpMode {
 				break;
 		}
 		
-		//arm control
-		wobble.armControl((operator.LT()) / -20000 - (operator.RT()) / -20000);
+		
+		//arm state machine
+		switch(currentArmState) {
+			case STATE_FULL_CONTROL:
+				if(operator.down()){
+					newState(ArmState.STATE_DOWN);
+					break;
+				}
+				if(operator.up()){
+					newState(ArmState.STATE_UP);
+					break;
+				}
+				wobble.armControl((operator.LT()) / -20000 - (operator.RT()) / -20000);
+				break;
+			case STATE_DOWN:
+				if(operator.LT() > 0 || operator.RT() > 0){
+					newState(ArmState.STATE_FULL_CONTROL);
+					break;
+				}
+				if(operator.up()){
+					newState(ArmState.STATE_UP);
+					break;
+				}
+				wobble.armDown();
+				break;
+			case STATE_UP:
+				if(operator.LT() > 0 || operator.RT() > 0){
+					newState(ArmState.STATE_FULL_CONTROL);
+					break;
+				}
+				if(operator.down()){
+					newState(ArmState.STATE_DOWN);
+					break;
+				}
+				wobble.armUp();
+				break;
+			case STATE_DELAY:
+				if(armTime.seconds()>.6){
+					newState(ArmState.STATE_FULL_CONTROL);
+					break;
+				}
+				wobble.stopArm();
+		}
 		
 		//shooter state machine
 		switch (currentShooterState) {
@@ -178,7 +221,7 @@ public class FullTeleOp extends OpMode {
 					newState(ShooterState.STATE_OFF);
 					break;
 				}
-				shooter.setPower(1.0);
+				shooter.setPower(-1.0);
 				telemetry.addData("shooter state = ", "power shot");
 				break;
 			case STATE_POWER_SHOT:
@@ -190,7 +233,7 @@ public class FullTeleOp extends OpMode {
 					newState(ShooterState.STATE_OFF);
 					break;
 				}
-				shooter.setPower(.75);
+				shooter.setPower(-.75);
 				telemetry.addData("shooter state = ", "top goal");
 				break;
 		}
@@ -208,7 +251,7 @@ public class FullTeleOp extends OpMode {
 				telemetry.addData("feeder state = ", "idle");
 				break;
 			case STATE_FEED:
-				if (feederTime.seconds() > .2) {
+				if (feederTime.seconds() > .1) {
 					newState(FeederState.STATE_RESET);
 					break;
 				}
@@ -216,7 +259,7 @@ public class FullTeleOp extends OpMode {
 				telemetry.addData("feeder state = ", "feed");
 				break;
 			case STATE_RESET:
-				if (feederTime.seconds() > .2) {
+				if (feederTime.seconds() > .1) {
 					newState(FeederState.STATE_IDLE);
 					break;
 				}
@@ -340,6 +383,11 @@ public class FullTeleOp extends OpMode {
 		currentGripperState = newState;
 	}
 	
+	private void newState(ArmState newState) {
+		currentArmState = newState;
+		armTime.reset();
+	}
+	
 	private void newState(ShooterState newState) {
 		currentShooterState = newState;
 	}
@@ -361,6 +409,13 @@ public class FullTeleOp extends OpMode {
 		STATE_GRIP,
 		STATE_EJECT,
 		STATE_OPEN
+	}
+	
+	private enum ArmState {
+		STATE_FULL_CONTROL,
+		STATE_DOWN,
+		STATE_UP,
+		STATE_DELAY
 	}
 	
 	private enum ShooterState {
