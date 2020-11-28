@@ -46,8 +46,10 @@ public class MecanumControl {
         double modTargetAngle = targetAngle % 360;
         double adjTargetAngle;
         if(previousTarget != targetAngle) { i=0; }
-        if(Math.abs(modTargetAngle - currentAngle) > 180){
+        if(modTargetAngle - modCurrentAngle > 180){
             adjTargetAngle = modTargetAngle - 360;
+        }else if(modTargetAngle - modCurrentAngle < -180){
+            adjTargetAngle = modTargetAngle + 360;
         }else{
             adjTargetAngle = modTargetAngle;
         }
@@ -122,57 +124,60 @@ public class MecanumControl {
     }
     
 
-//    public double adjustedTicks(){
-//        double measuredTicks = ((Math.abs(frontRight.getCurrentPosition()) + Math.abs(frontLeft.getCurrentPosition()) + Math.abs(backRight.getCurrentPosition()) + Math.abs(backLeft.getCurrentPosition())) / 4.0);
-//        double angleAdjustment = (Math.abs(Math.abs(drive) - Math.abs(strafe))/power -1) * -1;
-//        return Math.sqrt(Math.pow(measuredTicks, 2) + Math.pow(measuredTicks * angleAdjustment, 2));
-//    }
-//
-//    public void strafe(double heading, double strafeAngle, double targetPower, double startPower, double endPower, double distance){
-//        distance = Math.abs(distance);
-//        startPower = Math.abs(startPower);
-//        targetPower = Math.abs(targetPower);
-//        endPower = Math.abs(endPower);
-//
-//        double remainingDistance = distance - adjustedTicks();
-//        double acceleratePower = Math.sqrt(ACCEL_RATE * (adjustedTicks() + (1000 * Math.pow(startPower, 2)) + 1));
-//        double deceleratePower = Math.sqrt(ACCEL_RATE * (remainingDistance + (1000 * Math.pow(endPower, 2))));
-//
-//        double currentPower = Math.min(Math.min(acceleratePower, deceleratePower), targetPower);
-//        double drive = (Math.cos((strafeAngle - gyro.getRawAngle()) * (Math.PI / 180)));
-//        double strafe = (Math.sin((strafeAngle - gyro.getRawAngle()) * (Math.PI / 180)));
-//        double turn = ((heading - gyro.getRawAngle()) * .003);
-//
-//        setPower(drive, strafe, turn, currentPower);
-//
-//    }
-//
-//    public void strafe(double heading, double strafeAngle, double targetPower, double startPower){
-//
-//        startPower = Math.abs(startPower);
-//        targetPower = Math.abs(targetPower);
-//
-//        double acceleratePower = Math.sqrt(ACCEL_RATE * (adjustedTicks() + (1000 * Math.pow(startPower, 2)) + 1));
-//
-//        double currentPower = Math.min(acceleratePower, targetPower);
-//        double drive = (Math.cos((strafeAngle - gyro.getRawAngle()) * (Math.PI / 180)));
-//        double strafe = (Math.sin((strafeAngle - gyro.getRawAngle()) * (Math.PI / 180)));
-//        double turn = ((heading - gyro.getRawAngle()) * .003);
-//
-//        setPower(drive, strafe, turn, currentPower);
-//
-//    }
-//    public void resetMotors(){
-//        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//
-//        frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-//        frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-//        backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-//        backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-//    }
+    public double adjustedTicks(){
+        double measuredTicks = ((Math.abs(frontRight.getCurrentPosition()) + Math.abs(frontLeft.getCurrentPosition()) + Math.abs(backRight.getCurrentPosition()) + Math.abs(backLeft.getCurrentPosition())) / 4.0);
+        double angleAdjustment = (Math.abs(Math.abs(drive) - Math.abs(strafe))/power -1) * -1;
+        return Math.sqrt(Math.pow(measuredTicks, 2) + Math.pow(measuredTicks * angleAdjustment, 2));
+    }
+
+    public void strafe(double heading, double strafeAngle, double targetPower, double startPower, double endPower, double distance){
+        distance = Math.abs(distance);
+        if(startPower == 0){
+            startPower = .05;
+        }
+        startPower = Math.abs(startPower);
+        targetPower = Math.abs(targetPower);
+        endPower = Math.abs(endPower);
+
+        double remainingDistance = distance - adjustedTicks();
+        double acceleratePower = Math.sqrt(ACCEL_RATE * (adjustedTicks() + (1000 * Math.pow(startPower, 2)) + 1));
+        double deceleratePower = Math.sqrt(ACCEL_RATE * (remainingDistance + (1000 * Math.pow(endPower, 2))));
+
+        double currentPower = Math.min(Math.min(acceleratePower, deceleratePower), targetPower);
+        double drive = (Math.cos((strafeAngle - gyro.getRawAngle()) * (Math.PI / 180)));
+        double strafe = (Math.sin((strafeAngle - gyro.getRawAngle()) * (Math.PI / 180)));
+        double turn = ((heading - gyro.getRawAngle()) * .003);
+
+        setPowerAuto(drive, strafe, turn, currentPower);
+
+    }
+
+    public void strafe(double heading, double strafeAngle, double targetPower, double startPower){
+
+        startPower = Math.abs(startPower);
+        targetPower = Math.abs(targetPower);
+
+        double acceleratePower = Math.sqrt(ACCEL_RATE * (adjustedTicks() + (1000 * Math.pow(startPower, 2)) + 1));
+
+        double currentPower = Math.min(acceleratePower, targetPower);
+        double drive = (Math.cos((strafeAngle - gyro.getRawAngle()) * (Math.PI / 180)));
+        double strafe = (Math.sin((strafeAngle - gyro.getRawAngle()) * (Math.PI / 180)));
+        double turn = ((heading - gyro.getRawAngle()) * .003);
+
+        setPowerAuto(drive, strafe, turn, currentPower);
+
+    }
+    public void resetMotors(){
+        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
 
     public void addTelemetryData(){
 

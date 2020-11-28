@@ -6,286 +6,293 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.HardwareClasses.Intake;
+import org.firstinspires.ftc.teamcode.Controller;
 import org.firstinspires.ftc.teamcode.HardwareClasses.MecanumControl;
 import org.firstinspires.ftc.teamcode.HardwareClasses.Shooter;
 import org.firstinspires.ftc.teamcode.HardwareClasses.WobbleGripper;
 import org.firstinspires.ftc.teamcode.teamcodecopy.Gyro;
 import org.firstinspires.ftc.utilities.Utils;
 
-@Autonomous(name = "State Machine Test", group="Auto")
+@Autonomous(name = "State Machine Test", group = "Auto")
 
 public class StateMachineAuto extends OpMode {
+	
+	public ElapsedTime Runtime = new ElapsedTime();
+	MecanumControl robot;
+	Shooter shooter;
+	WobbleGripper wobble;
+	Controller operator;
+	Controller driver;
+	private DriveState currentState = DriveState.STATE_INITIAL;
+	private SwitchState currentSwitchState = SwitchState.STATE_INITIAL;
+	private FeederState currentFeederState = FeederState.STATE_IDLE;
+	private GripperState currentGripperState = GripperState.STATE_OPEN;
+	private ShooterState currentShooterState = ShooterState.STATE_OFF;
+	private ArmState currentArmState = ArmState.STATE_FULL_CONTROL;
+	private final ElapsedTime stateTime = new ElapsedTime();
+	private final ElapsedTime switchTime = new ElapsedTime();
+	private final ElapsedTime feederTime = new ElapsedTime();
+	private final ElapsedTime gripperTime = new ElapsedTime();
+	private final ElapsedTime shooterTime = new ElapsedTime();
+	private final ElapsedTime armTime = new ElapsedTime();
+	private DcMotor frontLeft;
+	private DcMotor frontRight;
+	private DcMotor backLeft;
+	private DcMotor backRight;
+	private DcMotor shooterOne;
+	private DcMotor shooterTwo;
+	private Servo feeder;
+	private Servo gripper;
+	private Servo lifter;
+	private org.firstinspires.ftc.utilities.IMU imu;
+	private Gyro gyro;
+	
+	@Override
+	public void init() {
+		Utils.setHardwareMap(hardwareMap);
+		frontLeft = hardwareMap.get(DcMotor.class, "frontleft");
+		frontRight = hardwareMap.get(DcMotor.class, "frontright");
+		backLeft = hardwareMap.get(DcMotor.class, "backleft");
+		backRight = hardwareMap.get(DcMotor.class, "backright");
+		shooterOne = hardwareMap.get(DcMotor.class, "shooter_one");
+		shooterTwo = hardwareMap.get(DcMotor.class, "shooter_two");
+		
+		feeder = hardwareMap.get(Servo.class, "feeder");
+		gripper = hardwareMap.get(Servo.class, "gripper");
+		lifter = hardwareMap.get(Servo.class, "lifter");
+		
+		imu = new org.firstinspires.ftc.utilities.IMU("imu");
+		gyro = new Gyro(imu, 0);
+		
+		driver = new Controller(gamepad1);
+		operator = new Controller(gamepad2);
+		
+		robot = new MecanumControl(frontLeft, frontRight, backLeft, backRight, gyro);
+		
+		shooter = new Shooter(shooterOne, shooterTwo, feeder);
+		wobble = new WobbleGripper(gripper, lifter);
+		
+		telemetry.addData("Status", "Initialized");
+		
+		
+	}
 
-    private enum State {
-        STATE_INITIAL,
-        STATE_LOWER_ARM,
-        STATE_GRAB_GOAL,
-        STATE_VISION,
-        STATE_A,
-        STATE_B,
-        STATE_C
-    }
-
-    private enum SwitchState {
-        STATE_INITIAL,
-        STATE_DELIVER_FIRST,
-        STATE_EJECT_FIRST_GOAL,
-        STATE_DELIVER_SECOND
-    }
-
-    private enum FeederState {
-        STATE_IDLE,
-        STATE_FEED,
-        STATE_RESET,
-        STATE_DELAY
-    }
-
-    private enum GripperState {
-        STATE_GRIP,
-        STATE_EJECT,
-        STATE_OPEN
-    }
-
-    private enum ShooterState{
-        STATE_OFF,
-        STATE_TOP_GOAL,
-        STATE_POWER_SHOT
-    }
-
-    private enum ArmState {
-        STATE_UP,
-        STATE_DOWN
-    }
-
-    private State currentState = State.STATE_INITIAL;
-    private SwitchState currentSwitchState = SwitchState.STATE_INITIAL;
-    private FeederState currentFeederState = FeederState.STATE_IDLE;
-    private GripperState currentGripperState = GripperState.STATE_OPEN;
-    private ShooterState currentShooterState = ShooterState.STATE_OFF;
-    private ArmState currentArmState = ArmState.STATE_UP;
-
-    public ElapsedTime Runtime = new ElapsedTime();
-    private ElapsedTime stateTime = new ElapsedTime();
-    private ElapsedTime switchTime = new ElapsedTime();
-    private ElapsedTime feederTime = new ElapsedTime();
-    private ElapsedTime gripperTime = new ElapsedTime();
-    private ElapsedTime shooterTime = new ElapsedTime();
-    private ElapsedTime armTime = new ElapsedTime();
-
-    private DcMotor frontLeft;
-    private DcMotor frontRight;
-    private DcMotor backLeft;
-    private DcMotor backRight;
-    private DcMotor shooterOne;
-    private DcMotor shooterTwo;
-    private DcMotor intakeDrive;
-
-    private Servo feeder;
-    private Servo tubingDeploy;
-    private Servo gripper;
-    private Servo lifter;
-
-    private org.firstinspires.ftc.utilities.IMU imu;
-    private Gyro gyro;
-
-    MecanumControl robot;
-    Shooter shooter;
-    Intake intake;
-    WobbleGripper wobble;
-
-    @Override
-    public void init() {
-        Utils.setHardwareMap(hardwareMap);
-        frontLeft = hardwareMap.get(DcMotor.class, "front_left");
-        frontRight = hardwareMap.get(DcMotor.class, "front_right");
-        backLeft = hardwareMap.get(DcMotor.class, "back_left");
-        backRight = hardwareMap.get(DcMotor.class, "back_right");
-        shooterOne = hardwareMap.get(DcMotor.class, "shooter_one");
-        shooterTwo = hardwareMap.get(DcMotor.class, "shooter_two");
-        intakeDrive = hardwareMap.get(DcMotor.class, "intake_drive");
-
-        feeder = hardwareMap.get(Servo.class, "feeder");
-        tubingDeploy = hardwareMap.get(Servo.class, "tubing_deploy");
-        gripper = hardwareMap.get(Servo.class, "gripper");
-        lifter = hardwareMap.get(Servo.class, "lifter");
-
-        imu = new org.firstinspires.ftc.utilities.IMU("imu");
-        gyro = new Gyro(imu, 0);
-
-        robot = new MecanumControl(frontLeft, frontRight, backLeft, backRight, gyro);
-
-        shooter  = new Shooter(shooterOne, shooterTwo, feeder);
-        intake = new Intake(intakeDrive, tubingDeploy);
-        wobble = new WobbleGripper(gripper, lifter);
-
-        telemetry.addData("Status", "Initialized");
-
-
-    }
-
-    public void init_loop(){
-
-        wobble.armUp();
-        shooter.off();
-
-
-    }
-
-    public void start(){
-        Runtime.reset();
-        stateTime.reset();
-        feederTime.reset();
-        gripperTime.reset();
-        shooterTime.reset();
-    }
-
-    @Override
-    public void loop() {
-
-        switch (currentState) {
-            case STATE_INITIAL:
-
-                newState(State.STATE_VISION);
-
-                break;
-
-            case STATE_LOWER_ARM:
-                if(wobble.isArmDown()){
-                    newState(State.STATE_GRAB_GOAL);
-                }else{
-                    newState(ArmState.STATE_DOWN);
-                }
-                break;
-
-            case STATE_GRAB_GOAL:
-                if(gripperTime.seconds() > .5){
-                }
-                newState(GripperState.STATE_GRIP);
-                break;
-
-//            case STATE_VISION:
-//                if(vision.noRings()){
-//                    newState(State.STATE_A);
-//                }else if(vision.oneRing()) {
-//                    newState(State.STATE_B);
-//                }else if(vision.fourRings()){
-//                    newState(State.STATE_C);
-//                }else{
-//
-//                }
-//                break;
-
-            case STATE_A:
-                switch (currentSwitchState){
-                    case STATE_INITIAL:
-                        newState(SwitchState.STATE_DELIVER_FIRST);
-                    case STATE_DELIVER_FIRST:
-
-                }
-            case STATE_B:
-
-            case STATE_C:
-
-        }
-
-        //Feeder State Machine
-        switch (currentFeederState){
-            case STATE_IDLE:
-                break;
-            case STATE_FEED:
-                if (shooter.isRingFed() || feederTime.seconds() > 0.5){
-                    newState(FeederState.STATE_RESET);
-                }else{
-                    shooter.feedRing();
-                }
-                break;
-            case STATE_RESET:
-                if (shooter.isReset()){
-                    newState(FeederState.STATE_DELAY);
-                }else{
-                    shooter.resetFeeder();
-                }
-                break;
-            case STATE_DELAY:
-                if(feederTime.seconds()>0.4){
-                    newState(FeederState.STATE_IDLE);
-                }
-                break;
-        }
-
-        //Wobble Goal Gripper State Machine
-        switch(currentGripperState){
+	public void init_loop() {
+		
+	    switch (currentGripperState){
             case STATE_OPEN:
+                if (operator.RBPress()) {
+                    newState(GripperState.STATE_GRIP);
+                    break;
+                }
                 wobble.open();
                 break;
             case STATE_GRIP:
+                if (operator.RBPress()) {
+                    newState(GripperState.STATE_OPEN);
+                    break;
+                }
                 wobble.grip();
                 break;
-            case STATE_EJECT:
-                if(wobble.isEjected()){
-                    newState(GripperState.STATE_OPEN);
-                }else{
-                    wobble.eject();
+        }
+        
+        switch(currentArmState) {
+            case STATE_FULL_CONTROL:
+                if(operator.down()){
+                    newState(ArmState.STATE_DOWN);
+                    break;
                 }
+                if(operator.up()){
+                    newState(ArmState.STATE_UP);
+                    break;
+                }
+                wobble.armControl((operator.LT()) / -20000 - (operator.RT()) / -20000);
                 break;
-        }
-
-        //Shooter State Machine
-        switch(currentShooterState){
-            case STATE_OFF:
-                shooter.setPower(0);
+            case STATE_DOWN:
+                if(operator.LT() > 0 || operator.RT() > 0){
+                    newState(ArmState.STATE_FULL_CONTROL);
+                    break;
+                }
+                if(operator.up()){
+                    newState(ArmState.STATE_UP);
+                    break;
+                }
+                wobble.armDown();
                 break;
-            case STATE_TOP_GOAL:
-                shooter.topGoal();
+            case STATE_UP:
+                if(operator.LT() > 0 || operator.RT() > 0){
+                    newState(ArmState.STATE_FULL_CONTROL);
+                    break;
+                }
+                if(operator.down()){
+                    newState(ArmState.STATE_DOWN);
+                    break;
+                }
+                
+                wobble.armUp();
                 break;
-            case STATE_POWER_SHOT:
-                shooter.powerShot();
-                break;
+            case STATE_DELAY:
+                if(armTime.seconds()>.6){
+                    newState(ArmState.STATE_FULL_CONTROL);
+                    break;
+                }
+                wobble.stopArm();
         }
+		shooter.off();
+	}
+	
+	public void start() {
+		Runtime.reset();
+		stateTime.reset();
+		feederTime.reset();
+		gripperTime.reset();
+		shooterTime.reset();
+		currentGripperState = GripperState.STATE_GRIP;
+        currentArmState = ArmState.STATE_UP;
+	}
 
-    }
+	@Override
+	public void loop() {
+		
+		switch (currentState) {
+			case STATE_INITIAL:
+				
+				newState(DriveState.STATE_RING_STACK);
+                telemetry.addData("master state = ", "initial");
+				robot.resetMotors();
+				break;
+			
+			case STATE_RING_STACK:
+				if (robot.adjustedTicks()>5000) {
+					newState(DriveState.STATE_GRAB_GOAL);
+					break;
+				} else {
+					robot.strafe(0,0,1.0,0.0,0.0,5000);
+                    telemetry.addData("master state = ", "ringstack");
+					break;
+				}
+            case STATE_VISION:
+                robot.setPowerAuto(0,0,0,0);
+                telemetry.addData("master state = ", "vision");
+			
+		}
+		
+//		//Wobble Goal Gripper State Machine
+//		switch (currentGripperState) {
+//			case STATE_OPEN:
+//				wobble.open();
+//				break;
+//			case STATE_GRIP:
+//				wobble.grip();
+//				break;
+//			case STATE_EJECT:
+//				if (wobble.isEjected()) {
+//					newState(GripperState.STATE_OPEN);
+//				} else {
+//					wobble.eject();
+//				}
+//				break;
+//		}
+		
+//		//Shooter State Machine
+//		switch (currentShooterState) {
+//			case STATE_OFF:
+//				shooter.setPower(0);
+//				break;
+//			case STATE_TOP_GOAL:
+//				shooter.topGoal();
+//				break;
+//			case STATE_POWER_SHOT:
+//				shooter.powerShot();
+//				break;
+//		}
+        telemetry.update();
+		
+	}
 
-    private void newState(State newState){
-        if (currentState != newState) {
-            currentState = newState;
-            stateTime.reset();
-        }
-    }
+	private void newState(DriveState newState) {
+		if (currentState != newState) {
+			currentState = newState;
+			stateTime.reset();
+		}
+	}
 
-    private void newState(SwitchState newState){
-        if (currentSwitchState != newState) {
-            currentSwitchState = newState;
-            switchTime.reset();
-        }
-    }
-
-    private void newState(FeederState newState){
-        if (currentFeederState != newState) {
-            currentFeederState = newState;
-            feederTime.reset();
-        }
-    }
-
-    private void newState(GripperState newState){
-        if (currentGripperState != newState) {
-            currentGripperState = newState;
-            gripperTime.reset();
-        }
-    }
-
-    private void newState(ShooterState newState){
-        if (currentShooterState != newState) {
-            currentShooterState = newState;
-            shooterTime.reset();
-        }
-    }
-
-    private void newState(ArmState newState){
-        if (currentArmState != newState) {
-            currentArmState = newState;
-            armTime.reset();
-        }
-    }
-
+	private void newState(SwitchState newState) {
+		if (currentSwitchState != newState) {
+			currentSwitchState = newState;
+			switchTime.reset();
+		}
+	}
+	
+	private void newState(FeederState newState) {
+		if (currentFeederState != newState) {
+			currentFeederState = newState;
+			feederTime.reset();
+		}
+	}
+	
+	private void newState(GripperState newState) {
+		if (currentGripperState != newState) {
+			currentGripperState = newState;
+			gripperTime.reset();
+		}
+	}
+	
+	private void newState(ShooterState newState) {
+		if (currentShooterState != newState) {
+			currentShooterState = newState;
+			shooterTime.reset();
+		}
+	}
+	
+	private void newState(ArmState newState) {
+		if (currentArmState != newState) {
+			currentArmState = newState;
+			armTime.reset();
+		}
+	}
+	
+	private enum DriveState {
+		STATE_INITIAL,
+		STATE_RING_STACK,
+		STATE_GRAB_GOAL,
+		STATE_VISION,
+		STATE_A,
+		STATE_B,
+		STATE_C
+	}
+	
+	private enum SwitchState {
+		STATE_INITIAL,
+		STATE_DELIVER_FIRST,
+		STATE_EJECT_FIRST_GOAL,
+		STATE_DELIVER_SECOND
+	}
+	
+	private enum FeederState {
+		STATE_IDLE,
+		STATE_FEED,
+		STATE_RESET,
+		STATE_DELAY
+	}
+	
+	private enum GripperState {
+		STATE_GRIP,
+		STATE_EJECT,
+		STATE_OPEN
+	}
+	
+	private enum ShooterState {
+		STATE_OFF,
+		STATE_TOP_GOAL,
+		STATE_POWER_SHOT
+	}
+	
+	private enum ArmState {
+		STATE_FULL_CONTROL,
+        STATE_DELAY,
+	    STATE_UP,
+		STATE_DOWN
+	}
+	
 }
