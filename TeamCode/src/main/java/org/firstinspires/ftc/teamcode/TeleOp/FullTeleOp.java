@@ -192,6 +192,7 @@ public class FullTeleOp extends OpMode {
 					newState(ArmState.STATE_DOWN);
 					break;
 				}
+				
 				wobble.armUp();
 				break;
 			case STATE_DELAY:
