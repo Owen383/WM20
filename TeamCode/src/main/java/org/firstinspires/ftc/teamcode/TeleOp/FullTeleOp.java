@@ -208,7 +208,7 @@ public class FullTeleOp extends OpMode {
 				telemetry.addData("feeder state = ", "idle");
 				break;
 			case STATE_FEED:
-				if (shooter.isRingFed() && feederTime.seconds() > 1) {
+				if (feederTime.seconds() > .2) {
 					newState(FeederState.STATE_RESET);
 					break;
 				}
@@ -216,7 +216,7 @@ public class FullTeleOp extends OpMode {
 				telemetry.addData("feeder state = ", "feed");
 				break;
 			case STATE_RESET:
-				if (shooter.isReset()) {
+				if (feederTime.seconds() > .2) {
 					newState(FeederState.STATE_IDLE);
 					break;
 				}
