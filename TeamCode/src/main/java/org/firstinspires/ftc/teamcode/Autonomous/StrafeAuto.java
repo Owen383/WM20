@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.PID;
+import org.firstinspires.ftc.teamcode.teamcodecopy.Gyro;
 import org.firstinspires.ftc.utilities.IMU;
 import org.firstinspires.ftc.utilities.Utils;
 
@@ -16,34 +18,39 @@ public class StrafeAuto extends LinearOpMode {
     DcMotor fr, fl, br, bl;
     IMU imu;
     private final ElapsedTime runtime = new ElapsedTime();
+    private Gyro gyro;
+    private PID rotationPID = new PID(.03, 0.0000, .000, 20);
 
 
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         initialize();
+        gyro.setDatum(imu.getAngle());
         waitForStart();
+    
+        
 
         turn(10, 1.0);
 
-        strafe(5200, 10, 0, 1.0, 0.0, 0.0);
-        strafe(5200, 10, 180, 1.0, 0.0, 0.0);
-        turn(-75, 1.0);
-        strafe(5200, -75, -90, 1.0, 0.0, 0.0);
-        turn(100, 1.0);
-        strafe(5200, 100, 90, 1.0, 0.0, 0.0);
-        turn(0,1.0);
-
-        strafe(5200, 0, 135,1.0, 0.0, 0.0);
-        strafe(7352, 0, -90,1.0, 0.0, 0.0);
-        turn(45, 1.0);
-        strafe(7352, 45, 0,1.0, 0.0, 0.0);
-        turn(-100, 1.0);
-        strafe(7352, -100, 90,1.0, 0.0, 0.0);
-        turn(0,1.0);
-        strafe(3676, 0, 180,1.0, 0.0, 0.0);
-        strafe(3676, 0, -90,1.0, 0.0, 0.0);
-        turn(2000,1.0);
+        strafe(5200, 10, -135, 1.0, 0.0, 0.0);
+//        strafe(5200, 10, 180, 1.0, 0.0, 0.0);
+//        turn(-75, 1.0);
+//        strafe(5200, -75, -90, 1.0, 0.0, 0.0);
+//        turn(100, 1.0);
+//        strafe(5200, 100, 90, 1.0, 0.0, 0.0);
+//        turn(0,1.0);
+//
+//        strafe(5200, 0, 135,1.0, 0.0, 0.0);
+//        strafe(7352, 0, -90,1.0, 0.0, 0.0);
+//        turn(45, 1.0);
+//        strafe(7352, 45, 0,1.0, 0.0, 0.0);
+//        turn(-100, 1.0);
+//        strafe(7352, -100, 90,1.0, 0.0, 0.0);
+//        turn(0,1.0);
+//        strafe(3676, 0, 180,1.0, 0.0, 0.0);
+//        strafe(3676, 0, -90,1.0, 0.0, 0.0);
+//        turn(2000,1.0);
 
         setPowerAll(0.0);
 
@@ -53,10 +60,10 @@ public class StrafeAuto extends LinearOpMode {
 
         Utils.setHardwareMap(hardwareMap);
 
-        fr = hardwareMap.get(DcMotor.class, "front_right_motor");
-        fl = hardwareMap.get(DcMotor.class, "front_left_motor");
-        br = hardwareMap.get(DcMotor.class, "back_right_motor");
-        bl = hardwareMap.get(DcMotor.class, "back_left_motor");
+        fr = hardwareMap.get(DcMotor.class, "frontright");
+        fl = hardwareMap.get(DcMotor.class, "frontleft");
+        br = hardwareMap.get(DcMotor.class, "backright");
+        bl = hardwareMap.get(DcMotor.class, "backleft");
 
         fr.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         fl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -69,6 +76,9 @@ public class StrafeAuto extends LinearOpMode {
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
 
         imu = new IMU("imu");
+        gyro = new Gyro(imu, imu.getAngle());
+        
+        
 
     }
 
@@ -76,16 +86,16 @@ public class StrafeAuto extends LinearOpMode {
 
         double accelRate = .00001;
 
-        double drive = Math.cos((incomingAngle - imu.getAngle()) * (Math.PI / 180)) * incomingPower;
-        double strafe = Math.sin((incomingAngle - imu.getAngle()) * (Math.PI / 180)) * incomingPower;
+        double drive = Math.cos((incomingAngle - gyro.getRawAngle()) * (Math.PI / 180)) * incomingPower;
+        double strafe = Math.sin((incomingAngle - gyro.getRawAngle()) * (Math.PI / 180)) * incomingPower;
 
         double flPower = drive - strafe;
         double frPower = drive + strafe;
         double blPower = drive + strafe;
         double brPower = drive - strafe;
 
-        double drive2 = Math.cos((outgoingAngle - imu.getAngle()) * (Math.PI / 180)) * outgoingPower;
-        double strafe2 = Math.sin((outgoingAngle - imu.getAngle()) * (Math.PI / 180)) * outgoingPower;
+        double drive2 = Math.cos((outgoingAngle - gyro.getRawAngle()) * (Math.PI / 180)) * outgoingPower;
+        double strafe2 = Math.sin((outgoingAngle - gyro.getRawAngle()) * (Math.PI / 180)) * outgoingPower;
 
         double flOut = drive2 - strafe2;
         double frOut = drive2 + strafe2;
@@ -130,10 +140,6 @@ public class StrafeAuto extends LinearOpMode {
             br.setPower(brPower);
 
             telemetry.addData("fl power: ", flPower);
-            telemetry.addData("fr power: ", frPower);
-            telemetry.addData("bl power: ", blPower);
-            telemetry.addData("br power: ", brPower);
-            telemetry.update();
     }
     }
 
@@ -143,29 +149,30 @@ public class StrafeAuto extends LinearOpMode {
         double accelRate = 0.02;
         boolean endLoop = false;
         double currentPower;
-        double startAngle = imu.getAngle();
+        double startAngle = gyro.getRawAngle();
+        
 
-        if (imu.getAngle() > targetAngle) {
+        if (startAngle > targetAngle) {
             targetPower *= -1;
         }
 
-        while (!endLoop){
+        while (!endLoop && opModeIsActive()){
 
+            double currentAngle = gyro.getRawAngle();
 
-
-            double remainingAngle = Math.abs(targetAngle - imu.getAngle());
-            double acceleratePower = Math.sqrt(accelRate * (Math.abs(imu.getAngle() - startAngle) + 1));
+            double remainingAngle = Math.abs(targetAngle - currentAngle);
+            double acceleratePower = Math.sqrt(accelRate * (Math.abs(currentAngle - startAngle) + 1));
             double deceleratePower = Math.sqrt(accelRate * (remainingAngle));
             currentPower = Math.min(Math.min(Math.abs(acceleratePower), Math.abs(deceleratePower)), Math.abs(targetPower));
 
             if(targetPower < 0){
-                endLoop = imu.getAngle() < targetAngle;
+                endLoop = currentAngle < targetAngle;
                 currentPower *= -1;
             }else{
-                endLoop = imu.getAngle() > targetAngle;
+                endLoop = currentAngle > targetAngle;
             }
 
-            telemetry.addData("Current Power: ", currentPower);
+            telemetry.addData("current angle", currentAngle);
             telemetry.update();
 
 
@@ -190,8 +197,11 @@ public class StrafeAuto extends LinearOpMode {
         double currentPower;
         double currentDistance = 0;
         double turn = 0;
+        
 
-        while (currentDistance < distance){
+        while (currentDistance < distance  && opModeIsActive()){
+    
+            double currentAngle = gyro.getRawAngle();
 
             double remainingDistance = distance - currentDistance;
             double acceleratePower = Math.sqrt(accelRate * (currentDistance + (1000 * Math.pow(startPower, 2)) + 1));
@@ -200,9 +210,9 @@ public class StrafeAuto extends LinearOpMode {
             currentPower = Math.min(Math.min(acceleratePower, deceleratePower), targetPower);
             telemetry.addData("Current Power: ", currentPower);
 
-            double drive = Math.cos((strafeAngle - imu.getAngle()) * (Math.PI / 180)) * currentPower;
-            double strafe = Math.sin((strafeAngle - imu.getAngle()) * (Math.PI / 180)) * currentPower;
-            turn = ((heading - imu.getAngle()) * .003 * Math.abs(currentPower));
+            double drive = Math.cos((strafeAngle - currentAngle) * (Math.PI / 180)) * currentPower;
+            double strafe = Math.sin((strafeAngle - currentAngle) * (Math.PI / 180)) * currentPower;
+            turn = rotationPID.update(heading - currentAngle) * Math.abs(currentPower);
 
 
             double measuredTicks = ((Math.abs(fr.getCurrentPosition()) + Math.abs(fl.getCurrentPosition()) + Math.abs(br.getCurrentPosition()) + Math.abs(bl.getCurrentPosition())) / 4.0);
@@ -231,7 +241,7 @@ public class StrafeAuto extends LinearOpMode {
             telemetry.addData("Drive: ", drive);
             telemetry.addData("Strafe: ", strafe);
             telemetry.addData("Turn: ", turn);
-            telemetry.addData("IMU: ", imu.getAngle());
+            telemetry.addData("current angle", currentAngle);
             telemetry.update();
 
         }

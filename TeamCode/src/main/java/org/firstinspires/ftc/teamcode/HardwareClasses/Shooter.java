@@ -35,9 +35,9 @@ public class Shooter {
     public void feedRing(){
         feeder.setPosition(RING_FEED);
     }
-
+    
     public boolean isRingFed(){
-        return (feeder.getPosition() == RING_FEED);
+        return (feeder.getPosition() <= RING_FEED);
     }
 
     public void resetFeeder(){
@@ -45,7 +45,7 @@ public class Shooter {
     }
 
     public boolean isReset(){
-        return (feeder.getPosition() == RESET);
+        return (feeder.getPosition() >= RESET);
     }
     
     public boolean isDelayComplete(){

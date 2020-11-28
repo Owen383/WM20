@@ -197,18 +197,18 @@ public class OperatorTeleOp extends OpMode {
         //Wobble Goal Gripper State Machine
         switch(currentGripperState){
             case STATE_OPEN:
-                if(operator.rightBumper()){
+                if(operator.RB()){
                     newState(GripperState.STATE_GRIP);
-                }else if(operator.leftBumper()) {
+                }else if(operator.LB()) {
                     newState(GripperState.STATE_EJECT);
                 }else{
                     wobble.open();
                 }
                 break;
             case STATE_GRIP:
-                if(operator.rightBumper()){
+                if(operator.RB()){
                     newState(GripperState.STATE_OPEN);
-                }else if(operator.leftBumper()) {
+                }else if(operator.LB()) {
                     newState(GripperState.STATE_EJECT);
                 }else{
                     wobble.grip();

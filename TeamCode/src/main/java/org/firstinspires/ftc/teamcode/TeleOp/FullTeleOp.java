@@ -49,32 +49,27 @@ import org.firstinspires.ftc.utilities.Utils;
 public class FullTeleOp extends OpMode {
 	
 	private final ElapsedTime runtime = new ElapsedTime();
-	private ElapsedTime feederTime = new ElapsedTime();
-	private IMU imu;
+	private final ElapsedTime feederTime = new ElapsedTime();
 	private Gyro gyro;
 	private Controller driver;
 	private Controller operator;
 	private MecanumControl robot;
 	private WobbleGripper wobble;
 	private Shooter shooter;
-	private DcMotor shooterOne;
-	private DcMotor shooterTwo;
 	private DcMotor intake;
-	private Servo gripper;
-	private Servo lifter;
 	private Servo feeder;
-	private double armPos;
 	private GripperState currentGripperState = GripperState.STATE_OPEN;
 	private ShooterState currentShooterState = ShooterState.STATE_OFF;
-	private FeederState currentFeederState = FeederState.STATE_RESET;
+	private FeederState currentFeederState = FeederState.STATE_IDLE;
+	private DriveState currentDriveState = DriveState.STATE_FULL_CONTROL;
 	
 	
 	@Override
 	public void init() {
 		telemetry.addData("Status", "Initialized");
 		
-		gripper = hardwareMap.get(Servo.class, "gripper");
-		lifter = hardwareMap.get(Servo.class, "lifter");
+		Servo gripper = hardwareMap.get(Servo.class, "gripper");
+		Servo lifter = hardwareMap.get(Servo.class, "lifter");
 		feeder = hardwareMap.get(Servo.class, "feeder");
 		
 		driver = new Controller(gamepad1);
@@ -85,8 +80,8 @@ public class FullTeleOp extends OpMode {
 		DcMotor backLeft = hardwareMap.get(DcMotor.class, "backleft");
 		DcMotor backRight = hardwareMap.get(DcMotor.class, "backright");
 		
-		shooterOne = hardwareMap.get(DcMotor.class, "shooter_one");
-		shooterTwo = hardwareMap.get(DcMotor.class, "shooter_two");
+		DcMotor shooterOne = hardwareMap.get(DcMotor.class, "shooter_one");
+		DcMotor shooterTwo = hardwareMap.get(DcMotor.class, "shooter_two");
 		intake = hardwareMap.get(DcMotor.class, "intake");
 		
 		frontRight.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -94,108 +89,92 @@ public class FullTeleOp extends OpMode {
 		backRight.setDirection(DcMotorSimple.Direction.FORWARD);
 		backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 		
-		
-		// IMU (Inertial Measurement Unit)
 		Utils.setHardwareMap(hardwareMap);
-		imu = new IMU("imu");
+		IMU imu = new IMU("imu");
 		gyro = new Gyro(imu, 0);
 		wobble = new WobbleGripper(gripper, lifter);
 		shooter = new Shooter(shooterOne, shooterTwo, feeder);
 		robot = new MecanumControl(frontLeft, frontRight, backLeft, backRight, gyro);
+		wobble.armUp();
 	}
-
-	/*
-	 * Code to run when the op mode is first enabled goes here
-	 * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#start()
-	 */
+	
 	@Override
 	public void init_loop() {
 	}
 	
-	/*
-	 * This method will be called ONCE when start is pressed
-	 * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#loop()
-	 */
 	@Override
 	public void start() {
 		runtime.reset();
 		robot.resetGyro();
 	}
 	
-	/*
-	 * This method will be called repeatedly in a loop
-	 * @see com.qualcomm.robotcore.eventloop.opmode.OpMode#loop()
-	 */
 	@Override
 	public void loop() {
-		telemetry.addData("Status", "Run Time: " + runtime.toString());
 		
-		Controller.Thumbstick driverThumbstickR = driver.getRightThumbstick();
-		Controller.Thumbstick driverThumbstickL = driver.getLeftThumbstick();
+		Controller.Thumbstick driverRightStick = driver.getRightThumbstick();
+		Controller.Thumbstick driverLeftStick = driver.getLeftThumbstick();
 		Controller.Thumbstick operatorThumbstickR = operator.getRightThumbstick();
 		Controller.Thumbstick operatorThumbstickL = operator.getLeftThumbstick();
 		
-		driverThumbstickR.setShift(gyro.getModAngle());
-		driverThumbstickL.setShift(0);
+		driverRightStick.setShift(gyro.getModAngle());
+		driverLeftStick.setShift(0);
 		operatorThumbstickR.setShift(0);
 		operatorThumbstickL.setShift(0);
 		
 		//gripper state machine
 		switch (currentGripperState) {
 			case STATE_OPEN:
-				if (operator.rightBumperPress()) {
+				if (operator.RBPress()) {
 					newState(GripperState.STATE_GRIP);
-				} else if (operator.leftBumperPress()) {
+					break;
+				}if (operator.LBPress()) {
 					newState(GripperState.STATE_EJECT);
-				} else {
-					wobble.open();
-					telemetry.addData("state = ", "open");
+					break;
 				}
+				wobble.open();
+				telemetry.addData("wobble state = ", "open");
 				break;
 			case STATE_GRIP:
-				if (operator.rightBumperPress()) {
+				if (operator.RBPress()) {
 					newState(GripperState.STATE_OPEN);
 					break;
 				}
-				if (operator.leftBumperPress()) {
+				if (operator.LBPress()) {
 					newState(GripperState.STATE_EJECT);
 					break;
 				}
 				wobble.grip();
-				telemetry.addData("state = ", "grip");
-				
+				telemetry.addData("wobble state = ", "grip");
 				break;
 			case STATE_EJECT:
 				if (wobble.isEjected()) {
 					newState(GripperState.STATE_OPEN);
+					break;
 				}
 				wobble.eject();
-				telemetry.addData("state = ", "EJECT");
+				telemetry.addData("wobble state = ", "EJECT");
 				break;
-			
 		}
 		
 		//arm control
-		wobble.armControl((gamepad2.right_trigger) / -50 - (gamepad2.left_trigger) / -50);
-		telemetry.addData("arm position = ", armPos);
+		wobble.armControl((operator.LT()) / -20000 - (operator.RT()) / -20000);
 		
 		//shooter state machine
 		switch (currentShooterState) {
 			case STATE_OFF:
-				if (driver.triangle()) {
+				if (operator.trianglePress()) {
 					newState(ShooterState.STATE_TOP_GOAL);
 					break;
 				}
 				shooter.setPower(0);
 				telemetry.addData("shooter state = ", "off");
-				
 				break;
 			case STATE_TOP_GOAL:
-				if (driver.left()) {
+				if (operator.left()) {
 					newState(ShooterState.STATE_POWER_SHOT);
 					break;
 				}
-				if (driver.square()) {
+				if (operator.trianglePress()) {
 					newState(ShooterState.STATE_OFF);
 					break;
 				}
@@ -203,75 +182,158 @@ public class FullTeleOp extends OpMode {
 				telemetry.addData("shooter state = ", "power shot");
 				break;
 			case STATE_POWER_SHOT:
-				if (driver.right()) {
+				if (operator.right()) {
 					newState(ShooterState.STATE_TOP_GOAL);
 					break;
 				}
-				if (driver.square()) {
+				if (operator.trianglePress()) {
 					newState(ShooterState.STATE_OFF);
 					break;
 				}
 				shooter.setPower(.75);
 				telemetry.addData("shooter state = ", "top goal");
-				
 				break;
 		}
 		
+		telemetry.addData("flywheel rpm = ", Math.abs(shooter.getRPM()));
+		
 		//feeder state machine
-        switch (currentFeederState) {
-	        case STATE_IDLE:
-	        	if(operator.square()) {
-			        newState(FeederState.STATE_FEED);
-			        break;
-		        }
-	        	shooter.resetFeeder();
-	        	break;
-	        case STATE_FEED:
-		        if(shooter.feeder.getPosition() < .35){
-			        newState(FeederState.STATE_RESET);
-			        break;
-		        }
-		        shooter.feedRing();
-		        break;
-	        case STATE_RESET:
-	        	if(shooter.feeder.getPosition() > .35){
-	        		newState(FeederState.STATE_DELAY);
-	        		break;
-		        }
-	        	shooter.resetFeeder();
-	        	break;
-	        case STATE_DELAY:
-	        	if(shooter.isDelayComplete()){
-	        		newState(FeederState.STATE_IDLE);
-			        break;
-		        }
-	        	shooter.resetFeeder();
-	        	break;
-        }
-
-        telemetry.addData("feeder position = ", feeder.getPosition());
-
-		telemetry.addData("rpm = ", Math.abs(shooter.getRPM()));
-
-		if (driver.crossToggle()) {
+		switch (currentFeederState) {
+			case STATE_IDLE:
+				if (operator.square()) {
+					newState(FeederState.STATE_FEED);
+					break;
+				}
+				shooter.resetFeeder();
+				telemetry.addData("feeder state = ", "idle");
+				break;
+			case STATE_FEED:
+				if (shooter.isRingFed() && feederTime.seconds() > 1) {
+					newState(FeederState.STATE_RESET);
+					break;
+				}
+				shooter.feedRing();
+				telemetry.addData("feeder state = ", "feed");
+				break;
+			case STATE_RESET:
+				if (shooter.isReset()) {
+					newState(FeederState.STATE_IDLE);
+					break;
+				}
+				shooter.resetFeeder();
+				telemetry.addData("feeder state = ", "reset");
+				break;
+		}
+		
+		telemetry.addData("feeder position = ", feeder.getPosition());
+		
+		if (operator.crossToggle()) {
 			intake.setPower(1.0);
 		} else {
 			intake.setPower(0);
 		}
 		
-		double drive = driverThumbstickR.getInvertedShiftedY();
-		double strafe = driverThumbstickR.getInvertedShiftedX();
-		double turn = driverThumbstickL.getInvertedShiftedX();
 		
-		telemetry.addData("drive = ", drive);
-		telemetry.addData("strafe = ", strafe);
-		telemetry.addData("turn = ", turn);
+		double precision = (((driver.RT() + 1) / -2) + 1.5);
 		
-		double precision = (((gamepad1.right_trigger + 1) / -2) + 1.5);
+		//drive state machine
+		switch (currentDriveState) {
+			case STATE_FULL_CONTROL:
+				if (driver.up()) {
+					newState(DriveState.STATE_0);
+				}
+				if (driver.left()) {
+					newState(DriveState.STATE_90);
+				}
+				if (driver.down()) {
+					newState(DriveState.STATE_180);
+				}
+				if (driver.right()) {
+					newState(DriveState.STATE_270);
+				} else {
+					robot.setPowerTele(driverRightStick.getInvertedShiftedY(), driverRightStick.getInvertedShiftedX(), driverLeftStick.getInvertedX(), precision);
+				}
+				telemetry.addData("drive state = ", "full control");
+				break;
+			case STATE_0:
+				if ((driverLeftStick.isInput() || gyro.getModAngle() == 0)) {
+					newState(DriveState.STATE_FULL_CONTROL);
+				}
+				if (driver.left()) {
+					newState(DriveState.STATE_90);
+				}
+				if (driver.down()) {
+					newState(DriveState.STATE_180);
+				}
+				if (driver.right()) {
+					newState(DriveState.STATE_270);
+				}
+				
+				robot.setPowerAuto(driverRightStick.getInvertedShiftedY(), driverRightStick.getInvertedShiftedX(), robot.closestTarget(0), precision);
+				telemetry.addData("drive state = ", "0º");
+				break;
+			case STATE_90:
+				if ((driverLeftStick.isInput() || gyro.getModAngle() == 0)) {
+					newState(DriveState.STATE_FULL_CONTROL);
+				}
+				if (driver.up()) {
+					newState(DriveState.STATE_0);
+				}
+				if (driver.down()) {
+					newState(DriveState.STATE_180);
+				}
+				if (driver.right()) {
+					newState(DriveState.STATE_270);
+				}
+				
+				robot.setPowerAuto(driverRightStick.getInvertedShiftedY(), driverRightStick.getInvertedShiftedX(), robot.closestTarget(90), precision);
+				telemetry.addData("drive state = ", "90º");
+				break;
+			case STATE_180:
+				if ((driverLeftStick.isInput() || gyro.getModAngle() == 0)) {
+					newState(DriveState.STATE_FULL_CONTROL);
+				}
+				if (driver.left()) {
+					newState(DriveState.STATE_90);
+				}
+				if (driver.up()) {
+					newState(DriveState.STATE_0);
+				}
+				if (driver.right()) {
+					newState(DriveState.STATE_270);
+				}
+				
+				robot.setPowerAuto(driverRightStick.getInvertedShiftedY(), driverRightStick.getInvertedShiftedX(), robot.closestTarget(180), precision);
+				telemetry.addData("drive state = ", "180º");
+				break;
+			case STATE_270:
+				if ((driverLeftStick.isInput() || gyro.getModAngle() == 0)) {
+					newState(DriveState.STATE_FULL_CONTROL);
+				}
+				if (driver.left()) {
+					newState(DriveState.STATE_90);
+				}
+				if (driver.down()) {
+					newState(DriveState.STATE_180);
+				}
+				if (driver.up()) {
+					newState(DriveState.STATE_0);
+				}
+				
+				robot.setPowerAuto(driverRightStick.getInvertedShiftedY(), driverRightStick.getInvertedShiftedX(), robot.closestTarget(270), precision);
+				telemetry.addData("drive state = ", "270º");
+				break;
+		}
 		
-		robot.setPowerTele(driverThumbstickR.getInvertedShiftedY(), driverThumbstickR.getInvertedShiftedX(), gamepad1.left_stick_x * -1, precision);
+		if (driver.options()) {
+			robot.resetGyro();
+		}
 		
 		telemetry.update();
+	}
+	
+	private void newState(DriveState newState) {
+		currentDriveState = newState;
 	}
 	
 	private void newState(GripperState newState) {
@@ -282,10 +344,18 @@ public class FullTeleOp extends OpMode {
 		currentShooterState = newState;
 	}
 	
-	private void newState(FeederState newState){
-	    currentFeederState = newState;
-	    shooter.feederDelay.reset();
-    }
+	private void newState(FeederState newState) {
+		currentFeederState = newState;
+		feederTime.reset();
+	}
+	
+	private enum DriveState {
+		STATE_FULL_CONTROL,
+		STATE_0,
+		STATE_90,
+		STATE_180,
+		STATE_270
+	}
 	
 	private enum GripperState {
 		STATE_GRIP,
@@ -302,7 +372,6 @@ public class FullTeleOp extends OpMode {
 	private enum FeederState {
 		STATE_IDLE,
 		STATE_RESET,
-		STATE_FEED,
-		STATE_DELAY
+		STATE_FEED
 	}
 }

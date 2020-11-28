@@ -11,7 +11,7 @@ public class MecanumControl {
     private DcMotor frontRight;
     private DcMotor backLeft;
     private DcMotor backRight;
-    private PID rotationPID = new PID(.015, 0.0, .0004, 60, false);
+    private PID rotationPID = new PID(.03, 0.0000, .000, 20);
 
     private Gyro gyro;
 
@@ -21,6 +21,8 @@ public class MecanumControl {
     private double power;
     private double targetAngle;
     private int i = 0;
+    double retVal = 0;
+    double previousTarget = 0;
 
     private final static double ACCEL_RATE = 0.001;
 
@@ -34,21 +36,41 @@ public class MecanumControl {
 
     public void resetGyro(){
         gyro.setDatum(gyro.getRawAngle());
+        targetAngle = 0;
 
     }
     
-    public void goTo90(){
-    
+    public double closestTarget(double targetAngle){
+        double currentAngle = gyro.getRawAngle();
+        double modCurrentAngle = currentAngle % 360;
+        double modTargetAngle = targetAngle % 360;
+        double adjTargetAngle;
+        if(previousTarget != targetAngle) { i=0; }
+        if(Math.abs(modTargetAngle - currentAngle) > 180){
+            adjTargetAngle = modTargetAngle - 360;
+        }else{
+            adjTargetAngle = modTargetAngle;
+        }
+        if(i==0){
+            retVal = currentAngle - modCurrentAngle + adjTargetAngle;
+        }
+        i++;
+        previousTarget = targetAngle;
+
+        return retVal;
     }
 
     public void setPowerTele(double drive, double strafe, double turn, double power){
         this.drive = drive * power;
         this.strafe = strafe * power;
-        if (turn != 0){
-            targetAngle = gyro.getRawAngle();
+        if (turn > 0) {
+            targetAngle = gyro.getRawAngle() + .1 * gyro.rateOfChange();
+            this.turn = turn * power;
+        }else if (turn < 0){
+            targetAngle = gyro.getRawAngle() + .1 * gyro.rateOfChange();
             this.turn = turn * power;
         }else {
-            this.turn = rotationPID.update(targetAngle - gyro.getRawAngle()) * 3 * Math.abs(power);
+            this.turn = rotationPID.update(targetAngle - gyro.getRawAngle()) * Math.abs(power);
         }
         this.power = power;
 
@@ -78,7 +100,7 @@ public class MecanumControl {
         this.drive = drive * power;
         this.strafe = strafe * power;
         this.targetAngle = targetAngle;
-        turn = rotationPID.update(targetAngle - gyro.getRawAngle()) * 3 * Math.abs(power);
+        turn = rotationPID.update(targetAngle - gyro.getRawAngle()) * Math.abs(power);
         this.power = power;
         
         double flPower = this.drive - this.strafe - turn;

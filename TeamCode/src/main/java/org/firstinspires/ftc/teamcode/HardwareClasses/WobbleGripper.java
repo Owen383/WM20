@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.HardwareClasses;
 
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.RingBuffer;
+
 public class WobbleGripper {
 
     public Servo gripper;
@@ -10,9 +12,10 @@ public class WobbleGripper {
     private static final double GRIPPER_CLOSED = 0.0;
     private static final double GRIPPER_EJECT = .9;
     private static final double GRIPPER_OPEN = 0.5;
-    private static final double ARM_UP = .75;
-    private static final double ARM_DOWN = 0.35;
+    private static final double ARM_UP = .35;
+    private static final double ARM_DOWN = 0.75;
     private static final double SERVO_RANGE = .05;
+    private RingBuffer<Double> timeRing = new RingBuffer<>(20, 0.0);
 
     public WobbleGripper(Servo gripper, Servo lifter){
         this.gripper = gripper;
@@ -34,9 +37,11 @@ public class WobbleGripper {
     }
 
     public void armControl(double deltaPosition){
-        armPosition = armPosition + deltaPosition;
-        if(armPosition > ARM_UP){ armPosition = ARM_UP; }
-        else if (armPosition < ARM_DOWN){ armPosition = ARM_DOWN; }
+        double currentTime = System.currentTimeMillis();
+        double deltaMili = currentTime - timeRing.getValue(currentTime);
+        armPosition += deltaPosition * deltaMili;
+        if(armPosition < ARM_UP){ armPosition = ARM_UP; }
+        else if (armPosition > ARM_DOWN){ armPosition = ARM_DOWN; }
         lifter.setPosition(armPosition);
     }
 
