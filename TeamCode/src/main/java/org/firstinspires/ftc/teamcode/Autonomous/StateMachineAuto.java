@@ -166,11 +166,10 @@ public class StateMachineAuto extends OpMode {
 				if (robot.adjustedTicks()>5000) {
 					newState(DriveState.STATE_GRAB_GOAL);
 					break;
-				} else {
-					robot.strafe(0,0,1.0,0.0,0.0,5000);
-                    telemetry.addData("master state = ", "ringstack");
-					break;
 				}
+				robot.strafe(0,0,1.0,0.0,0.0,5000);
+				telemetry.addData("master state = ", "ringstack");
+				break;
             case STATE_VISION:
                 robot.setPowerAuto(0,0,0,0);
                 telemetry.addData("master state = ", "vision");

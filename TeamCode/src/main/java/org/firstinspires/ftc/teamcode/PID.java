@@ -1,12 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
-//import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.FtcDashboard;
 
-
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.teamcodecopy.Constants;
 
 public class PID {
-    //private Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
+    private Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
 
     private double proportional;
     private double integral;
@@ -45,9 +45,9 @@ public class PID {
         double iComponent = integralSum * Constants.i;
         double dComponent = (rateOfChange * Constants.d);
         if(debugMode){
-//            dashboardTelemetry.addData("Proportional", pComponent);
-//            dashboardTelemetry.addData("Integral", iComponent);
-//            dashboardTelemetry.addData("Derivative", dComponent);
+            dashboardTelemetry.addData("Proportional", pComponent);
+            dashboardTelemetry.addData("Integral", iComponent);
+            dashboardTelemetry.addData("Derivative", dComponent);
         }
         this.result = pComponent + iComponent + dComponent;
         return result;
