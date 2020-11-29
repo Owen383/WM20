@@ -1,9 +1,12 @@
 package org.firstinspires.ftc.teamcode.HardwareClasses;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.PID;
-import org.firstinspires.ftc.teamcode.teamcodecopy.Gyro;
+import org.firstinspires.ftc.teamcode.RingBuffer;
+
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 
 public class MecanumControl {
 
@@ -12,6 +15,7 @@ public class MecanumControl {
     private DcMotor backLeft;
     private DcMotor backRight;
     private PID rotationPID = new PID(.03, 0.0000, .000, 20);
+    private RingBuffer<Double> timeRing = new RingBuffer<>(20, 0.0);
 
     private Gyro gyro;
 
@@ -20,13 +24,19 @@ public class MecanumControl {
     private double turn;
     private double power;
     private double targetAngle;
-    private int i = 0;
-    double retVal = 0;
-    double previousTarget = 0;
+    private double bigTurn;
+    private double retVal = 0;
+    private double previousTarget = 0;
 
     private final static double ACCEL_RATE = 0.001;
+    private static final double TELE_ACCEL = .0001;
 
     public MecanumControl(DcMotor frontLeft, DcMotor frontRight, DcMotor backLeft, DcMotor backRight, Gyro gyro) {
+        frontRight.setDirection(DcMotorSimple.Direction.FORWARD);
+        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRight.setDirection(DcMotorSimple.Direction.FORWARD);
+        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        
         this.frontLeft = frontLeft;
         this.frontRight = frontRight;
         this.backLeft = backLeft;
@@ -41,22 +51,21 @@ public class MecanumControl {
     }
     
     public double closestTarget(double targetAngle){
-        double currentAngle = gyro.getRawAngle();
-        double modCurrentAngle = currentAngle % 360;
-        double modTargetAngle = targetAngle % 360;
-        double adjTargetAngle;
-        if(previousTarget != targetAngle) { i=0; }
-        if(modTargetAngle - modCurrentAngle > 180){
-            adjTargetAngle = modTargetAngle - 360;
-        }else if(modTargetAngle - modCurrentAngle < -180){
-            adjTargetAngle = modTargetAngle + 360;
-        }else{
-            adjTargetAngle = modTargetAngle;
-        }
-        if(i==0){
+        if(previousTarget != targetAngle) {
+            double currentAngle = gyro.getRawAngle();
+            double modCurrentAngle = currentAngle % 360;
+            double modTargetAngle = targetAngle % 360;
+            double adjTargetAngle;
+    
+            if (modTargetAngle - modCurrentAngle > 180) {
+                adjTargetAngle = modTargetAngle - 360;
+            } else if (modTargetAngle - modCurrentAngle < -180) {
+                adjTargetAngle = modTargetAngle + 360;
+            } else {
+                adjTargetAngle = modTargetAngle;
+            }
             retVal = currentAngle - modCurrentAngle + adjTargetAngle;
         }
-        i++;
         previousTarget = targetAngle;
 
         return retVal;
@@ -65,12 +74,21 @@ public class MecanumControl {
     public void setPowerTele(double drive, double strafe, double turn, double power){
         this.drive = drive * power;
         this.strafe = strafe * power;
-        if (turn > 0) {
-            targetAngle = gyro.getRawAngle() + .1 * gyro.rateOfChange();
-            this.turn = turn * power;
-        }else if (turn < 0){
-            targetAngle = gyro.getRawAngle() + .1 * gyro.rateOfChange();
-            this.turn = turn * power;
+        double currentTime = System.currentTimeMillis();
+        double deltaTime = currentTime - timeRing.getValue(currentTime);
+        
+        if(bigTurn > 0) {
+            bigTurn -= TELE_ACCEL * deltaTime;
+            targetAngle = gyro.getRawAngle();
+            this.turn = bigTurn * power;
+        }
+        else if(bigTurn < 0) {
+            bigTurn -= TELE_ACCEL * deltaTime;
+            targetAngle = gyro.getRawAngle();
+            this.turn = bigTurn * power;
+        }
+        if (turn != 0) {
+            bigTurn = turn;
         }else {
             this.turn = rotationPID.update(targetAngle - gyro.getRawAngle()) * Math.abs(power);
         }
@@ -144,8 +162,8 @@ public class MecanumControl {
         double deceleratePower = Math.sqrt(ACCEL_RATE * (remainingDistance + (1000 * Math.pow(endPower, 2))));
 
         double currentPower = Math.min(Math.min(acceleratePower, deceleratePower), targetPower);
-        double drive = (Math.cos((strafeAngle - gyro.getRawAngle()) * (Math.PI / 180)));
-        double strafe = (Math.sin((strafeAngle - gyro.getRawAngle()) * (Math.PI / 180)));
+        double drive = (Math.cos(strafeAngle - gyro.getRawAngle()));
+        double strafe = (Math.sin(strafeAngle - gyro.getRawAngle()));
         double turn = ((heading - gyro.getRawAngle()) * .003);
 
         setPowerAuto(drive, strafe, turn, currentPower);
@@ -160,8 +178,8 @@ public class MecanumControl {
         double acceleratePower = Math.sqrt(ACCEL_RATE * (adjustedTicks() + (1000 * Math.pow(startPower, 2)) + 1));
 
         double currentPower = Math.min(acceleratePower, targetPower);
-        double drive = (Math.cos((strafeAngle - gyro.getRawAngle()) * (Math.PI / 180)));
-        double strafe = (Math.sin((strafeAngle - gyro.getRawAngle()) * (Math.PI / 180)));
+        double drive = (Math.cos(strafeAngle - gyro.getRawAngle()));
+        double strafe = (Math.sin(strafeAngle - gyro.getRawAngle()));
         double turn = ((heading - gyro.getRawAngle()) * .003);
 
         setPowerAuto(drive, strafe, turn, currentPower);
@@ -179,8 +197,11 @@ public class MecanumControl {
         backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    public void addTelemetryData(){
-
+    public void addDriveData(){
+        telemetry.addData("drive = ", drive);
+        telemetry.addData("strafe = ", strafe);
+        telemetry.addData("turn = ", turn);
+        telemetry.addData("angle = ", gyro.getRawAngle());
     }
 
     public void addTelemetryData(String driveLabel, String strafeLabel, String turnLabel){

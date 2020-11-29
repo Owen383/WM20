@@ -6,11 +6,11 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.Controller;
+import org.firstinspires.ftc.teamcode.HardwareClasses.Controller;
 import org.firstinspires.ftc.teamcode.HardwareClasses.MecanumControl;
 import org.firstinspires.ftc.teamcode.HardwareClasses.Shooter;
 import org.firstinspires.ftc.teamcode.HardwareClasses.WobbleGripper;
-import org.firstinspires.ftc.teamcode.teamcodecopy.Gyro;
+import org.firstinspires.ftc.teamcode.HardwareClasses.Gyro;
 import org.firstinspires.ftc.utilities.Utils;
 
 @Autonomous(name = "State Machine Test", group = "Auto")

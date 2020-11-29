@@ -7,8 +7,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.Controller;
-import org.firstinspires.ftc.teamcode.teamcodecopy.Gyro;
+import org.firstinspires.ftc.teamcode.HardwareClasses.Controller;
+import org.firstinspires.ftc.teamcode.HardwareClasses.Gyro;
 import org.firstinspires.ftc.teamcode.HardwareClasses.MecanumControl;
 import org.firstinspires.ftc.teamcode.PID;
 import org.firstinspires.ftc.utilities.IMU;

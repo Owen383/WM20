@@ -32,15 +32,14 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.Controller;
+import org.firstinspires.ftc.teamcode.HardwareClasses.Controller;
 import org.firstinspires.ftc.teamcode.HardwareClasses.MecanumControl;
 import org.firstinspires.ftc.teamcode.HardwareClasses.Shooter;
 import org.firstinspires.ftc.teamcode.HardwareClasses.WobbleGripper;
-import org.firstinspires.ftc.teamcode.teamcodecopy.Gyro;
+import org.firstinspires.ftc.teamcode.HardwareClasses.Gyro;
 import org.firstinspires.ftc.utilities.IMU;
 import org.firstinspires.ftc.utilities.Utils;
 
@@ -58,7 +57,6 @@ public class FullTeleOp extends OpMode {
 	private WobbleGripper wobble;
 	private Shooter shooter;
 	private DcMotor intake;
-	private Servo feeder;
 	private GripperState currentGripperState = GripperState.STATE_OPEN;
 	private ArmState currentArmState = ArmState.STATE_FULL_CONTROL;
 	private ShooterState currentShooterState = ShooterState.STATE_OFF;
@@ -72,7 +70,8 @@ public class FullTeleOp extends OpMode {
 		
 		Servo gripper = hardwareMap.get(Servo.class, "gripper");
 		Servo lifter = hardwareMap.get(Servo.class, "lifter");
-		feeder = hardwareMap.get(Servo.class, "feeder");
+		Servo feeder = hardwareMap.get(Servo.class, "feeder");
+		Servo feederLock = hardwareMap.get(Servo.class, "feeder_lock");
 		
 		driver = new Controller(gamepad1);
 		operator = new Controller(gamepad2);
@@ -86,16 +85,11 @@ public class FullTeleOp extends OpMode {
 		DcMotor shooterTwo = hardwareMap.get(DcMotor.class, "shooter_two");
 		intake = hardwareMap.get(DcMotor.class, "intake");
 		
-		frontRight.setDirection(DcMotorSimple.Direction.FORWARD);
-		frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-		backRight.setDirection(DcMotorSimple.Direction.FORWARD);
-		backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-		
 		Utils.setHardwareMap(hardwareMap);
 		IMU imu = new IMU("imu");
 		gyro = new Gyro(imu, 0);
 		wobble = new WobbleGripper(gripper, lifter);
-		shooter = new Shooter(shooterOne, shooterTwo, feeder);
+		shooter = new Shooter(shooterOne, shooterTwo, feeder, feederLock);
 		robot = new MecanumControl(frontLeft, frontRight, backLeft, backRight, gyro);
 		wobble.armUp();
 	}
@@ -249,27 +243,34 @@ public class FullTeleOp extends OpMode {
 					break;
 				}
 				shooter.resetFeeder();
+				if(feederTime.seconds() > 1){
+					shooter.lockFeeder();
+				}
 				telemetry.addData("feeder state = ", "idle");
 				break;
 			case STATE_FEED:
-				if (feederTime.seconds() > .1) {
+				if (feederTime.seconds() > .2) {
 					newState(FeederState.STATE_RESET);
 					break;
 				}
-				shooter.feedRing();
+				if(feederTime.seconds() > .07){
+					shooter.feedRing();
+				}
+				shooter.unlockFeeder();
 				telemetry.addData("feeder state = ", "feed");
 				break;
 			case STATE_RESET:
-				if (feederTime.seconds() > .1) {
+				if (feederTime.seconds() > .13) {
 					newState(FeederState.STATE_IDLE);
 					break;
 				}
 				shooter.resetFeeder();
+				shooter.unlockFeeder();
 				telemetry.addData("feeder state = ", "reset");
 				break;
 		}
 		
-		telemetry.addData("feeder position = ", feeder.getPosition());
+		telemetry.addData("feeder lock position = ", shooter.feederLock.getPosition());
 		
 		if (operator.crossToggle()) {
 			intake.setPower(1.0);

@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.PID;
-import org.firstinspires.ftc.teamcode.teamcodecopy.Gyro;
+import org.firstinspires.ftc.teamcode.HardwareClasses.Gyro;
 import org.firstinspires.ftc.utilities.IMU;
 import org.firstinspires.ftc.utilities.Utils;
 
@@ -19,14 +19,13 @@ public class StrafeAuto extends LinearOpMode {
     IMU imu;
     private final ElapsedTime runtime = new ElapsedTime();
     private Gyro gyro;
-    private PID rotationPID = new PID(.03, 0.0000, .000, 20);
+    private PID rotationPID = new PID(.003, 0.0000, .000, 20);
 
 
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         initialize();
-        gyro.setDatum(imu.getAngle());
         waitForStart();
     
         
@@ -86,16 +85,16 @@ public class StrafeAuto extends LinearOpMode {
 
         double accelRate = .00001;
 
-        double drive = Math.cos((incomingAngle - gyro.getRawAngle()) * (Math.PI / 180)) * incomingPower;
-        double strafe = Math.sin((incomingAngle - gyro.getRawAngle()) * (Math.PI / 180)) * incomingPower;
+        double drive = Math.cos(incomingAngle - gyro.getRawAngle()) * incomingPower;
+        double strafe = Math.sin(incomingAngle - gyro.getRawAngle()) * incomingPower;
 
         double flPower = drive - strafe;
         double frPower = drive + strafe;
         double blPower = drive + strafe;
         double brPower = drive - strafe;
 
-        double drive2 = Math.cos((outgoingAngle - gyro.getRawAngle()) * (Math.PI / 180)) * outgoingPower;
-        double strafe2 = Math.sin((outgoingAngle - gyro.getRawAngle()) * (Math.PI / 180)) * outgoingPower;
+        double drive2 = Math.cos(outgoingAngle - gyro.getRawAngle()) * outgoingPower;
+        double strafe2 = Math.sin(outgoingAngle - gyro.getRawAngle()) * outgoingPower;
 
         double flOut = drive2 - strafe2;
         double frOut = drive2 + strafe2;
@@ -210,8 +209,8 @@ public class StrafeAuto extends LinearOpMode {
             currentPower = Math.min(Math.min(acceleratePower, deceleratePower), targetPower);
             telemetry.addData("Current Power: ", currentPower);
 
-            double drive = Math.cos((strafeAngle - currentAngle) * (Math.PI / 180)) * currentPower;
-            double strafe = Math.sin((strafeAngle - currentAngle) * (Math.PI / 180)) * currentPower;
+            double drive = Math.cos(strafeAngle - currentAngle) * currentPower;
+            double strafe = Math.sin(strafeAngle - currentAngle) * currentPower;
             turn = rotationPID.update(heading - currentAngle) * Math.abs(currentPower);
 
 

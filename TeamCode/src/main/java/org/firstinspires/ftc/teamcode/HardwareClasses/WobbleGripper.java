@@ -12,8 +12,8 @@ public class WobbleGripper {
     private static final double GRIPPER_CLOSED = 0.0;
     private static final double GRIPPER_EJECT = .9;
     private static final double GRIPPER_OPEN = 0.5;
-    private static final double ARM_UP = .35;
-    private static final double ARM_DOWN = 0.75;
+    private static final double ARM_UP = .4;
+    private static final double ARM_DOWN = 0.8;
     private static final double SERVO_RANGE = .05;
     private RingBuffer<Double> timeRing = new RingBuffer<>(20, 0.0);
 
