@@ -70,20 +70,18 @@ public class MecanumControl {
         double currentTime = System.currentTimeMillis();
         double deltaTime = currentTime - timeRing.getValue(currentTime);
         
-        if(bigTurn > 0) {
-            this.turn = bigTurn * power;
+        if(bigTurn > -0.05) {
             bigTurn -= TELE_ACCEL * deltaTime;
             targetAngle = gyro.getRawAngle();
         }
-        else if(bigTurn < 0) {
-            this.turn = bigTurn * power;
+        else if(bigTurn < 0.05) {
             bigTurn += TELE_ACCEL * deltaTime;
             targetAngle = gyro.getRawAngle();
         }
         if (turn != 0) {
             bigTurn = turn;
-        }
-        else if(bigTurn < .04 && bigTurn > -.04){
+            this.turn = turn * power;
+        }else {
             this.turn = telePID.update(targetAngle - gyro.getRawAngle()) * Math.abs(power);
         }
         this.power = power;
