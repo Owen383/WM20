@@ -51,8 +51,7 @@ public class FullTeleOp extends OpMode {
 	private final ElapsedTime feederTime = new ElapsedTime();
 	private final ElapsedTime armTime = new ElapsedTime();
 	private Gyro gyro;
-	private Controller driver;
-	private Controller operator;
+	private Controller driver, operator;
 	private MecanumControl robot;
 	private WobbleGripper wobble;
 	private Shooter shooter;

@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.dashboard.FtcDashboard;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.teamcodecopy.Constants;
 
 public class PID {
     private Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
@@ -41,9 +40,9 @@ public class PID {
         double rateOfChange = (error - previousError) / deltaTime;
         previousTime = currentTime;
         previousError = error;
-        double pComponent = error * Constants.p;
-        double iComponent = integralSum * Constants.i;
-        double dComponent = (rateOfChange * Constants.d);
+        double pComponent = error * proportional;
+        double iComponent = integralSum * integral;
+        double dComponent = (rateOfChange * derivative);
         if(debugMode){
             dashboardTelemetry.addData("Proportional", pComponent);
             dashboardTelemetry.addData("Integral", iComponent);

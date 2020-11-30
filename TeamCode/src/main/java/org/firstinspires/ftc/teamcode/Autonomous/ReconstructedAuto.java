@@ -14,7 +14,7 @@ import org.firstinspires.ftc.utilities.Utils;
 
 @Autonomous(name="StrafeAuto", group="Autonomous Linear Opmode")
 @Disabled
-public class StrafeAuto extends LinearOpMode {
+public class ReconstructedAuto extends LinearOpMode {
 
     DcMotor fr, fl, br, bl;
     IMU imu;

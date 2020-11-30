@@ -6,10 +6,6 @@ import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.internal.android.dx.util.Warning;
 
-import org.firstinspires.ftc.teamcode.Utilities.Utils;
-
-import static org.firstinspires.ftc.teamcode.Utilities.Utils.hardwareMap;
-
 public class Vuforia {
     private VuforiaLocalizer vuforiaLocalizer;
 
