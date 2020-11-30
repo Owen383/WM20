@@ -1,11 +1,11 @@
-package org.firstinspires.ftc.teamcode.owen;
+package org.firstinspires.ftc.utilities;
 
-public class RingBuffer {
+public class RingBufferOwen {
 
     private long[] array;
     private int i = 0;
 
-    public RingBuffer(int length){
+    public RingBufferOwen(int length){
         array = new long [length];
     }
 

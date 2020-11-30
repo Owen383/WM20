@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.HardwareClasses;
 
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.RingBuffer;
+import org.firstinspires.ftc.utilities.RingBuffer;
 
 public class WobbleGripper {
 

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.utilities;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 
@@ -15,7 +15,7 @@ public class PID {
     private double previousError = 0;
     private long previousTime;
 
-    private org.firstinspires.ftc.teamcode.PIDRingBuffer errors;
+    private PIDRingBuffer errors;
 
     private boolean debugMode;
 
@@ -28,12 +28,12 @@ public class PID {
         this.integral = integral;
         this.derivative = derivative;
         this.debugMode = debugMode;
-        errors = new org.firstinspires.ftc.teamcode.PIDRingBuffer(integralLength);
+        errors = new PIDRingBuffer(integralLength);
         previousTime = System.currentTimeMillis();
     }
 
     public Double update(double error){
-        org.firstinspires.ftc.teamcode.PIDRingBuffer.IntegralDerivativePair integralDerivativePair = errors.update(error, System.currentTimeMillis());
+        PIDRingBuffer.IntegralDerivativePair integralDerivativePair = errors.update(error, System.currentTimeMillis());
         integralSum += error;
         long currentTime = System.currentTimeMillis();
         double deltaTime = (currentTime - previousTime) / 1000.0;
