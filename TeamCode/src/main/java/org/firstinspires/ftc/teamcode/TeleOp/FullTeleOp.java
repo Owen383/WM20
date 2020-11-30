@@ -380,7 +380,7 @@ public class FullTeleOp extends OpMode {
 				telemetry.addData("drive state = ", "270º");
 				break;
 		}
-		
+		telemetry.addData("rpm", robot.getRPM());
 		telemetry.update();
 	}
 	
