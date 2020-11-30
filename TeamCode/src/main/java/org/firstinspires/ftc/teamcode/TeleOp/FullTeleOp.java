@@ -61,6 +61,7 @@ public class FullTeleOp extends OpMode {
 	private ShooterState currentShooterState = ShooterState.STATE_OFF;
 	private FeederState currentFeederState = FeederState.STATE_IDLE;
 	private DriveState currentDriveState = DriveState.STATE_FULL_CONTROL;
+	boolean isFeederLocked = true;
 	
 	
 	@Override
@@ -242,17 +243,28 @@ public class FullTeleOp extends OpMode {
 					break;
 				}
 				shooter.resetFeeder();
-				if(feederTime.seconds() > 1){
+				if(feederTime.seconds() > .8){
 					shooter.lockFeeder();
+					isFeederLocked = true;
+				}else{
+					isFeederLocked = false;
 				}
 				telemetry.addData("feeder state = ", "idle");
 				break;
 			case STATE_FEED:
-				if (feederTime.seconds() > .2) {
-					newState(FeederState.STATE_RESET);
-					break;
-				}
-				if(feederTime.seconds() > .07){
+				if (isFeederLocked) {
+					if (feederTime.seconds() > .2) {
+						newState(FeederState.STATE_RESET);
+						break;
+					}
+					if (feederTime.seconds() > .1) {
+						shooter.feedRing();
+					}
+				}else{
+					if (feederTime.seconds() > .1) {
+						newState(FeederState.STATE_RESET);
+						break;
+					}
 					shooter.feedRing();
 				}
 				shooter.unlockFeeder();
@@ -367,10 +379,6 @@ public class FullTeleOp extends OpMode {
 				robot.setPowerAuto(driverRightStick.getInvertedShiftedY(), driverRightStick.getInvertedShiftedX(), robot.closestTarget(270), precision);
 				telemetry.addData("drive state = ", "270º");
 				break;
-		}
-		
-		if (driver.options()) {
-			robot.resetGyro();
 		}
 		
 		telemetry.update();
