@@ -1,9 +1,8 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.utilities;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.teamcodecopy.Constants;
 
 public class PID {
     private Telemetry dashboardTelemetry = FtcDashboard.getInstance().getTelemetry();
@@ -16,7 +15,7 @@ public class PID {
     private double previousError = 0;
     private long previousTime;
 
-    private org.firstinspires.ftc.teamcode.PIDRingBuffer errors;
+    private PIDRingBuffer errors;
 
     private boolean debugMode;
 
@@ -29,21 +28,21 @@ public class PID {
         this.integral = integral;
         this.derivative = derivative;
         this.debugMode = debugMode;
-        errors = new org.firstinspires.ftc.teamcode.PIDRingBuffer(integralLength);
+        errors = new PIDRingBuffer(integralLength);
         previousTime = System.currentTimeMillis();
     }
 
     public Double update(double error){
-        org.firstinspires.ftc.teamcode.PIDRingBuffer.IntegralDerivativePair integralDerivativePair = errors.update(error, System.currentTimeMillis());
+        PIDRingBuffer.IntegralDerivativePair integralDerivativePair = errors.update(error, System.currentTimeMillis());
         integralSum += error;
         long currentTime = System.currentTimeMillis();
         double deltaTime = (currentTime - previousTime) / 1000.0;
         double rateOfChange = (error - previousError) / deltaTime;
         previousTime = currentTime;
         previousError = error;
-        double pComponent = error * Constants.p;
-        double iComponent = integralSum * Constants.i;
-        double dComponent = (rateOfChange * Constants.d);
+        double pComponent = error * proportional;
+        double iComponent = integralSum * integral;
+        double dComponent = (rateOfChange * derivative);
         if(debugMode){
             dashboardTelemetry.addData("Proportional", pComponent);
             dashboardTelemetry.addData("Integral", iComponent);

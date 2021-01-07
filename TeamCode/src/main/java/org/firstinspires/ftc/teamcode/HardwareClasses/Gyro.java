@@ -1,7 +1,8 @@
 package org.firstinspires.ftc.teamcode.HardwareClasses;
 
-import org.firstinspires.ftc.teamcode.RingBuffer;
+import org.firstinspires.ftc.utilities.RingBuffer;
 import org.firstinspires.ftc.utilities.IMU;
+import org.firstinspires.ftc.utilities.MathUtils;
 
 public class Gyro {
 
@@ -50,7 +51,7 @@ public class Gyro {
 
     //TODO Make this work with more accuracy. Curse you, floorMod(int)!
     public double absToRel(int targetAbsoluteAngle){
-        double retval = org.firstinspires.ftc.teamcode.MathUtils.floorModDouble((360) + imu.getAngle(), 360);
+        double retval = MathUtils.floorModDouble((360) + imu.getAngle(), 360);
         return (retval <= 180) ? retval : -1 * (360 - retval);
     }
 }

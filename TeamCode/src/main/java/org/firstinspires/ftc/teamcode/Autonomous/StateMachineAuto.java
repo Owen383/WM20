@@ -167,7 +167,7 @@ public class StateMachineAuto extends OpMode {
 					newState(DriveState.STATE_GRAB_GOAL);
 					break;
 				}
-				robot.strafe(0,0,1.0,0.0,0.0,5000);
+				
 				telemetry.addData("master state = ", "ringstack");
 				break;
             case STATE_VISION:

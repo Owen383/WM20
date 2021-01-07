@@ -4,8 +4,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.PID;
-import org.firstinspires.ftc.teamcode.owen.RingBuffer;
+import org.firstinspires.ftc.utilities.PID;
+import org.firstinspires.ftc.utilities.RingBufferOwen;
 
 public class Shooter {
 
@@ -24,8 +24,8 @@ public class Shooter {
     private static final int POWER_SHOT = 3000;
     private static final double DELAY = .4;
 
-    RingBuffer timeRing = new RingBuffer(20);
-    RingBuffer positionRing = new RingBuffer(20);
+    RingBufferOwen timeRing = new RingBufferOwen(20);
+    RingBufferOwen positionRing = new RingBufferOwen(20);
     
     public ElapsedTime feederDelay = new ElapsedTime();
     

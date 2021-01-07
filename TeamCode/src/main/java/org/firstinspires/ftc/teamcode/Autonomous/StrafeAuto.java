@@ -1,18 +1,19 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.PID;
 import org.firstinspires.ftc.teamcode.HardwareClasses.Gyro;
+import org.firstinspires.ftc.utilities.PID;
 import org.firstinspires.ftc.utilities.IMU;
 import org.firstinspires.ftc.utilities.Utils;
 
 @Autonomous(name="StrafeAuto", group="Autonomous Linear Opmode")
-//@Disabled
+@Disabled
 public class StrafeAuto extends LinearOpMode {
 
     DcMotor fr, fl, br, bl;
@@ -30,9 +31,9 @@ public class StrafeAuto extends LinearOpMode {
     
         
 
-        turn(10, 1.0);
+        //turn(10, 1.0);
 
-        strafe(5200, 10, -135, 1.0, 0.0, 0.0);
+        strafe(5200, 0, 0, 1.0, 0.0, 0.0);
 //        strafe(5200, 10, 180, 1.0, 0.0, 0.0);
 //        turn(-75, 1.0);
 //        strafe(5200, -75, -90, 1.0, 0.0, 0.0);
@@ -183,10 +184,15 @@ public class StrafeAuto extends LinearOpMode {
         }
 
     }
+    
+    
 
     public void strafe(double distance, double heading, double strafeAngle, double targetPower, double startPower, double endPower){
 
         distance = Math.abs(distance);
+        if(startPower == 0){
+            startPower = .05;
+        }
         startPower = Math.abs(startPower);
         targetPower = Math.abs(targetPower);
         endPower = Math.abs(endPower);
@@ -208,16 +214,17 @@ public class StrafeAuto extends LinearOpMode {
 
             currentPower = Math.min(Math.min(acceleratePower, deceleratePower), targetPower);
             telemetry.addData("Current Power: ", currentPower);
+            telemetry.addData("gyro angle: ", currentAngle);
 
             double drive = Math.cos(strafeAngle - currentAngle) * currentPower;
             double strafe = Math.sin(strafeAngle - currentAngle) * currentPower;
-            turn = rotationPID.update(heading - currentAngle) * Math.abs(currentPower);
+            turn = 0;
+                    //rotationPID.update(heading - currentAngle) * Math.abs(currentPower);
 
 
             double measuredTicks = ((Math.abs(fr.getCurrentPosition()) + Math.abs(fl.getCurrentPosition()) + Math.abs(br.getCurrentPosition()) + Math.abs(bl.getCurrentPosition())) / 4.0);
             double angleAdjustment = (Math.abs(Math.abs(drive) - Math.abs(strafe))/currentPower -1) * -1;
             currentDistance = Math.sqrt(Math.pow(measuredTicks, 2) + Math.pow(measuredTicks * angleAdjustment, 2));
-
 
             double flPower = drive - strafe - turn;
             double frPower = drive + strafe + turn;

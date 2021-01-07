@@ -51,8 +51,7 @@ public class FullTeleOp extends OpMode {
 	private final ElapsedTime feederTime = new ElapsedTime();
 	private final ElapsedTime armTime = new ElapsedTime();
 	private Gyro gyro;
-	private Controller driver;
-	private Controller operator;
+	private Controller driver, operator;
 	private MecanumControl robot;
 	private WobbleGripper wobble;
 	private Shooter shooter;
@@ -62,6 +61,7 @@ public class FullTeleOp extends OpMode {
 	private ShooterState currentShooterState = ShooterState.STATE_OFF;
 	private FeederState currentFeederState = FeederState.STATE_IDLE;
 	private DriveState currentDriveState = DriveState.STATE_FULL_CONTROL;
+	boolean isFeederLocked = true;
 	
 	
 	@Override
@@ -243,17 +243,28 @@ public class FullTeleOp extends OpMode {
 					break;
 				}
 				shooter.resetFeeder();
-				if(feederTime.seconds() > 1){
+				if(feederTime.seconds() > .8){
 					shooter.lockFeeder();
+					isFeederLocked = true;
+				}else{
+					isFeederLocked = false;
 				}
 				telemetry.addData("feeder state = ", "idle");
 				break;
 			case STATE_FEED:
-				if (feederTime.seconds() > .2) {
-					newState(FeederState.STATE_RESET);
-					break;
-				}
-				if(feederTime.seconds() > .07){
+				if (isFeederLocked) {
+					if (feederTime.seconds() > .2) {
+						newState(FeederState.STATE_RESET);
+						break;
+					}
+					if (feederTime.seconds() > .1) {
+						shooter.feedRing();
+					}
+				}else{
+					if (feederTime.seconds() > .1) {
+						newState(FeederState.STATE_RESET);
+						break;
+					}
 					shooter.feedRing();
 				}
 				shooter.unlockFeeder();
@@ -369,11 +380,7 @@ public class FullTeleOp extends OpMode {
 				telemetry.addData("drive state = ", "270º");
 				break;
 		}
-		
-		if (driver.options()) {
-			robot.resetGyro();
-		}
-		
+		telemetry.addData("rpm", robot.getRPM());
 		telemetry.update();
 	}
 	
