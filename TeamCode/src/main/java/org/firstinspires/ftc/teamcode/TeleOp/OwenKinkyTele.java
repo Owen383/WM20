@@ -91,7 +91,7 @@ public class OwenKinkyTele extends OpMode {
 	
 	@Override
 	public void init_loop() {
-		intake.deployOuterRoller();
+		intake.retractOuterRoller();
 	}
 	
 	@Override
@@ -104,7 +104,7 @@ public class OwenKinkyTele extends OpMode {
 	@Override
 	public void loop() {
 		
-		intake.retractOuterRoller();
+		intake.deployOuterRoller();
 		
 		Controller.Thumbstick driverRightStick = driver.getRightThumbstick();
 		Controller.Thumbstick driverLeftStick = driver.getLeftThumbstick();

@@ -8,8 +8,8 @@ public class Intake {
     private DcMotor intakeDrive;
     private Servo outerRollerOne;
     private Servo outerRollerTwo;
-    private final static double RETRACTED = 0.8;
-    private final static double DEPLOYED = 1.0;
+    private final static double RETRACTED = 0.2;
+    private final static double DEPLOYED = -1.0;
     private final static double INTAKE_ON = -1.0;
 
     public Intake(DcMotor intakeDrive, Servo outerRollerOne, Servo outerRollerTwo){
