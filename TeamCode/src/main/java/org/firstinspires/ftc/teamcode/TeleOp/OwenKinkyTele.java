@@ -56,6 +56,7 @@ public class OwenKinkyTele extends OpMode {
 	private Intake intake;
 	
 	private ShooterState currentShooterState = ShooterState.STATE_OFF;
+	private IntakeState currentIntakeState = IntakeState.STATE_OFF;
 	private DriveState currentDriveState = DriveState.STATE_FULL_CONTROL;
 	
 	
@@ -104,7 +105,7 @@ public class OwenKinkyTele extends OpMode {
 	@Override
 	public void loop() {
 		
-		intake.deployOuterRoller();
+		
 		
 		Controller.Thumbstick driverRightStick = driver.getRightThumbstick();
 		Controller.Thumbstick driverLeftStick = driver.getLeftThumbstick();
@@ -202,13 +203,50 @@ public class OwenKinkyTele extends OpMode {
 		
 //		telemetry.addData("feeder lock position = ", shooter.feederLock.getPosition());
 		
-		if (operator.crossToggle()) {
-			intake.intakeOn();
-		} else { 
-			intake.intakeOff();
+		if(operator.RSToggle()){
+			intake.deployOuterRoller();
+		}else{
+			intake.retractOuterRoller();
 		}
 		
-		
+		switch (currentIntakeState) {
+			case STATE_OFF:
+				if (operator.crossPress()) {
+					newState(IntakeState.STATE_ON);
+					break;
+				}
+				if (operator.circlePress()) {
+					newState(IntakeState.STATE_REVERSE);
+					break;
+				}
+				intake.intakeOff();
+				telemetry.addData("intake state = ", "off");
+				break;
+			case STATE_ON:
+				if (operator.circlePress()) {
+					newState(IntakeState.STATE_REVERSE);
+					break;
+				}
+				if (operator.crossPress() || intake.outerRollerPosition()>.2) {
+					newState(IntakeState.STATE_OFF);
+					break;
+				}
+				intake.intakeOn();
+				telemetry.addData("intake state  = ", "on");
+				break;
+			case STATE_REVERSE:
+				if (operator.crossPress() || intake.outerRollerPosition()>.2) {
+					newState(IntakeState.STATE_OFF);
+					break;
+				}
+				if (operator.circlePress()) {
+					newState(IntakeState.STATE_ON);
+					break;
+				}
+				intake.intakeReverse();
+				telemetry.addData("intake state = ", "reverse");
+				break;
+		}
 		
 		
 		double precision = (((driver.RT() + 1) / -2) + 1.5);
@@ -318,6 +356,10 @@ public class OwenKinkyTele extends OpMode {
 //		feederTime.reset();
 //	}
 	
+	private void newState(IntakeState newState) {
+		currentIntakeState = newState;
+	}
+	
 	private enum DriveState {
 		STATE_FULL_CONTROL,
 		STATE_0,
@@ -330,6 +372,12 @@ public class OwenKinkyTele extends OpMode {
 		STATE_OFF,
 		STATE_TOP_GOAL,
 		STATE_POWER_SHOT
+	}
+	
+	private enum IntakeState {
+		STATE_OFF,
+		STATE_ON,
+		STATE_REVERSE
 	}
 	
 	private enum FeederState {

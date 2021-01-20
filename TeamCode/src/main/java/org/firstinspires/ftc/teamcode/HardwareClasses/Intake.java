@@ -8,8 +8,8 @@ public class Intake {
     private DcMotor intakeDrive;
     private Servo outerRollerOne;
     private Servo outerRollerTwo;
-    private final static double RETRACTED = 0.2;
-    private final static double DEPLOYED = -1.0;
+    private final static double RETRACTED = 0.29;
+    private final static double DEPLOYED = 0.0;
     private final static double INTAKE_ON = -1.0;
 
     public Intake(DcMotor intakeDrive, Servo outerRollerOne, Servo outerRollerTwo){
@@ -20,14 +20,18 @@ public class Intake {
 
     public void retractOuterRoller(){
         outerRollerOne.setPosition(RETRACTED);
-        outerRollerTwo.setPosition(-RETRACTED);
+        outerRollerTwo.setPosition(-RETRACTED+1);
     }
-
+    
+    public double outerRollerPosition() {
+        return (outerRollerOne.getPosition() - outerRollerTwo.getPosition() + 1)/2.0;
+    }
+    
     public boolean isTubingRetracted(){ return outerRollerOne.getPosition() == RETRACTED; }
 
     public void deployOuterRoller(){
         outerRollerOne.setPosition(DEPLOYED);
-        outerRollerTwo.setPosition(-DEPLOYED);
+        outerRollerTwo.setPosition(-DEPLOYED+1);
     }
 
     public boolean isTubingDeployed(){ return outerRollerOne.getPosition() == DEPLOYED; }
@@ -36,6 +40,6 @@ public class Intake {
 
     public void intakeOff(){ intakeDrive.setPower(0.0); }
 
-    public void intakeReverse(){ intakeDrive.setPower(-INTAKE_ON*.5); }
+    public void intakeReverse(){ intakeDrive.setPower(INTAKE_ON * -0.5); }
 
 }
