@@ -40,6 +40,6 @@ public class Intake {
 
     public void intakeOff(){ intakeDrive.setPower(0.0); }
 
-    public void intakeReverse(){ intakeDrive.setPower(INTAKE_ON * -0.5); }
+    public void intakeReverse(){ intakeDrive.setPower(INTAKE_ON * -0.75); }
 
 }

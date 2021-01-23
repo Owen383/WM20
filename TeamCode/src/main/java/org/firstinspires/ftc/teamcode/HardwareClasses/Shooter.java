@@ -16,18 +16,18 @@ public class Shooter {
     private PID shooterPID = new PID(.005, .0000, .000, 100, false);
 
     private static final double TICKS_PER_ROTATION = 28;
-    private static final double RING_FEED = 0.225;
-    private static final double RESET = .35;
-    private static final double FEEDER_LOCK = .35;
-    private static final double FEEDER_UNLOCK = 0.65;
+    private static final double RING_FEED = 0.0;
+    private static final double RESET = 0.3;
+    private static final double FEEDER_LOCK = .42;
+    private static final double FEEDER_UNLOCK = 0.25;
     private static final int TOP_GOAL = 4000;
     private static final int POWER_SHOT = 3000;
-    private static final double DELAY = .4;
+    private static final double FEEDER_TIME = .2;
 
     RingBufferOwen timeRing = new RingBufferOwen(20);
     RingBufferOwen positionRing = new RingBufferOwen(20);
     
-    public ElapsedTime feederDelay = new ElapsedTime();
+    public ElapsedTime feederTime = new ElapsedTime();
     
     public Shooter(DcMotor shooterOne, DcMotor shooterTwo, Servo feeder, Servo feederLock) {
         this.shooterOne = shooterOne;
@@ -45,17 +45,9 @@ public class Shooter {
     public void feedRing(){
         feeder.setPosition(RING_FEED);
     }
-    
-    public boolean isRingFed(){
-        return (feeder.getPosition() <= RING_FEED);
-    }
 
     public void resetFeeder(){
         feeder.setPosition(RESET);
-    }
-
-    public boolean isReset(){
-        return (feeder.getPosition() >= RESET);
     }
     
     public void lockFeeder(){
