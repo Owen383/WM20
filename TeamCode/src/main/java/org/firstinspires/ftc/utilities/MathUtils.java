@@ -12,6 +12,10 @@ public class MathUtils {
         return degs * (Math.PI / 180);
     }
 
+
+
+
+    //TODO  I need to do a lot more documentation on my code as I write it -  so I can do a better job of maintenance
     //TODO Make these actually have input for accuracy like a normal function
     public static double floorModDouble(double dividend, double divisor){
         return floorMod(Math.round(dividend * 1e6), Math.round(divisor * 1e6)) / 1e6;
@@ -22,7 +26,6 @@ public class MathUtils {
     }
 
     public static double floorModDouble(int dividend, double divisor){
-        System.out.println("pls work, github");
         return floorMod(dividend, Math.round(divisor * 1e6)) / 1e6;
 
     }

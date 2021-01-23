@@ -367,6 +367,10 @@ public class Controller {
 		public double getInvertedShiftedY(Double shiftAngle) {
 			return (this.rawX * Math.sin(Math.toRadians(shiftAngle))) + (this.rawY * Math.cos(Math.toRadians(shiftAngle))) * -1;
 		}
+
+		public double getAngle(){
+			return ((270 - (Math.atan2(0 - getInvertedY(), 0 - getInvertedX())) * 180 / Math.PI) % 360);
+		}
 		
 		
 	}

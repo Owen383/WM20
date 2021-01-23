@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.HardwareClasses.Controller;
-import org.firstinspires.ftc.teamcode.HardwareClasses.MecanumControl;
+import org.firstinspires.ftc.teamcode.HardwareClasses.MecanumChassis;
 import org.firstinspires.ftc.teamcode.HardwareClasses.Shooter;
 import org.firstinspires.ftc.teamcode.HardwareClasses.WobbleGripper;
 import org.firstinspires.ftc.teamcode.HardwareClasses.Gyro;
@@ -18,7 +18,7 @@ import org.firstinspires.ftc.utilities.Utils;
 public class StateMachineAuto extends OpMode {
 	
 	public ElapsedTime Runtime = new ElapsedTime();
-	MecanumControl robot;
+	MecanumChassis robot;
 	Shooter shooter;
 	WobbleGripper wobble;
 	Controller operator;
@@ -67,7 +67,7 @@ public class StateMachineAuto extends OpMode {
 		driver = new Controller(gamepad1);
 		operator = new Controller(gamepad2);
 		
-		robot = new MecanumControl(frontLeft, frontRight, backLeft, backRight, gyro);
+		robot = new MecanumChassis(frontLeft, frontRight, backLeft, backRight, gyro);
 		
 		shooter = new Shooter(shooterOne, shooterTwo, feeder);
 		wobble = new WobbleGripper(gripper, lifter);
