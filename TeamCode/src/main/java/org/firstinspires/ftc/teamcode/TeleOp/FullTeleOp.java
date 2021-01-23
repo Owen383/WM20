@@ -302,8 +302,6 @@ public class FullTeleOp extends OpMode {
 
 		 */
 		
-		telemetry.addData("feeder lock position = ", shooter.feederLock.getPosition());
-		
 		if (operator.crossToggle()) {
 			intake.setPower(1.0);
 		} else {

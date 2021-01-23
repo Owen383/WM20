@@ -11,18 +11,19 @@ public class Shooter {
 
     private DcMotor shooterOne;
     private DcMotor shooterTwo;
-    public Servo feeder;
-    public Servo feederLock;
-    private PID shooterPID = new PID(.005, .0000, .000, 100, false);
+    private Servo feeder;
+    private Servo feederLock;
+    private PID shooterPID = new PID(.0005, 0, .00023, 50, false);
 
     private static final double TICKS_PER_ROTATION = 28;
     private static final double RING_FEED = 0.0;
     private static final double RESET = 0.3;
-    private static final double FEEDER_LOCK = .42;
-    private static final double FEEDER_UNLOCK = 0.25;
-    private static final int TOP_GOAL = 4000;
+    private static final double FEEDER_LOCK = .46;
+    private static final double FEEDER_UNLOCK = 0.23;
+    private static final int TOP_GOAL = 3500;
     private static final int POWER_SHOT = 3000;
     private static final double FEEDER_TIME = .2;
+    private double shooterPower = 0.0;
 
     RingBufferOwen timeRing = new RingBufferOwen(20);
     RingBufferOwen positionRing = new RingBufferOwen(20);
@@ -67,8 +68,8 @@ public class Shooter {
         shooterOne.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shooterTwo.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        shooterOne.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        shooterTwo.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        shooterOne.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shooterTwo.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public long getPosition(){
@@ -86,19 +87,18 @@ public class Shooter {
         long deltaTicks = currentPosition - positionRing.getValue(currentPosition);
         double deltaRotations = deltaTicks / TICKS_PER_ROTATION;
 
-        retVal = deltaRotations / deltaMinutes;
+        retVal = Math.abs(deltaRotations / deltaMinutes);
 
         return retVal;
     }
 
     public void setRPM(int targetRPM){
-        if (shooterPID.update(targetRPM - getRPM()) > 1){
-            setPower(1.0);
-        }else if (shooterPID.getResult() < -1){
-            setPower(-1.0);
-        }else {
-            setPower(shooterPID.getResult());
-        }
+        shooterPower = shooterPower + Math.pow(shooterPID.update( targetRPM - getRPM()),3 );
+        
+        if(shooterPower > 1.0){ shooterPower = 1.0; }
+        else if(shooterPower < 0.0){ shooterPower = 0.0; }
+        
+        setPower(shooterPower);
     }
 
     public void topGoal(){ setRPM(TOP_GOAL); }

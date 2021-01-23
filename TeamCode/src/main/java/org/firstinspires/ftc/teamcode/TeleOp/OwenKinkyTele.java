@@ -148,8 +148,8 @@ public class OwenKinkyTele extends OpMode {
 					newState(IntakeState.STATE_REVERSE);
 					break;
 				}
-				shooter.setPower(1.0);
-				telemetry.addData("shooter state = ", "power shot");
+				shooter.topGoal();
+				telemetry.addData("shooter state = ", "top goal");
 				break;
 			case STATE_POWER_SHOT:
 				if (operator.right()) {
@@ -170,7 +170,7 @@ public class OwenKinkyTele extends OpMode {
 					newState(IntakeState.STATE_REVERSE);
 					break;
 				}
-				shooter.setPower(.75);
+				shooter.powerShot();
 				telemetry.addData("shooter state = ", "top goal");
 				break;
 		}
@@ -196,15 +196,15 @@ public class OwenKinkyTele extends OpMode {
 				break;
 			case STATE_FEED:
 				if (isFeederLocked) {
-					if (feederTime.seconds() > .23) {
+					if (feederTime.seconds() > .3) {
 						newState(FeederState.STATE_RESET);
 						break;
 					}
-					if (feederTime.seconds() > 0.05) {
+					if (feederTime.seconds() > 0.1) {
 						shooter.feedRing();
 					}
 				}else{
-					if (feederTime.seconds() > .1) {
+					if (feederTime.seconds() > .15) {
 						newState(FeederState.STATE_RESET);
 						break;
 					}
@@ -223,8 +223,6 @@ public class OwenKinkyTele extends OpMode {
 				telemetry.addData("feeder state = ", "reset");
 				break;
 		}
-		
-		telemetry.addData("feeder lock position = ", shooter.feederLock.getPosition());
 		
 		if(operator.RSToggle()){
 			intake.deployOuterRoller();
@@ -363,7 +361,7 @@ public class OwenKinkyTele extends OpMode {
 				break;
 		}
 		
-		telemetry.addData("rpm", robot.getRPM());
+		telemetry.addData("shooter rpm = ", shooter.getRPM());
 		telemetry.update();
 	}
 	

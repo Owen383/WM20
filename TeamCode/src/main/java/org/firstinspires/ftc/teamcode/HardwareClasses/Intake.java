@@ -26,15 +26,11 @@ public class Intake {
     public double outerRollerPosition() {
         return (outerRollerOne.getPosition() - outerRollerTwo.getPosition() + 1)/2.0;
     }
-    
-    public boolean isTubingRetracted(){ return outerRollerOne.getPosition() == RETRACTED; }
 
     public void deployOuterRoller(){
         outerRollerOne.setPosition(DEPLOYED);
         outerRollerTwo.setPosition(-DEPLOYED+1);
     }
-
-    public boolean isTubingDeployed(){ return outerRollerOne.getPosition() == DEPLOYED; }
 
     public void intakeOn(){ intakeDrive.setPower(INTAKE_ON); }
 
