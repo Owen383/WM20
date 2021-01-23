@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.HardwareClasses.Controller;
 import org.firstinspires.ftc.teamcode.HardwareClasses.Gyro;
-import org.firstinspires.ftc.teamcode.HardwareClasses.MecanumControl;
+import org.firstinspires.ftc.teamcode.HardwareClasses.MecanumChassis;
 import org.firstinspires.ftc.utilities.PID;
 import org.firstinspires.ftc.utilities.IMU;
 import org.firstinspires.ftc.utilities.Utils;
@@ -114,7 +114,7 @@ public class MecanumTeleOp extends OpMode {
         System.out.println("github pls work");
 
         Controller controller = new Controller(gamepad1);
-        MecanumControl mecanumControl = new MecanumControl(frontLeft, frontRight, backLeft, backRight, gyro);
+        MecanumChassis mecanumControl = new MecanumChassis(frontLeft, frontRight, backLeft, backRight, gyro);
         Gyro gyro = new Gyro(imu, imuDatum);
 
         Controller.Thumbstick rightThumbstick = controller.getRightThumbstick();

@@ -29,6 +29,10 @@
 
 package org.firstinspires.ftc.teamcode.TeleOp;
 
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -36,15 +40,19 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.HardwareClasses.Controller;
-import org.firstinspires.ftc.teamcode.HardwareClasses.MecanumControl;
+import org.firstinspires.ftc.teamcode.HardwareClasses.MecanumChassis;
 import org.firstinspires.ftc.teamcode.HardwareClasses.Shooter;
 import org.firstinspires.ftc.teamcode.HardwareClasses.WobbleGripper;
 import org.firstinspires.ftc.teamcode.HardwareClasses.Gyro;
+import org.firstinspires.ftc.utilities.GyroUtils;
 import org.firstinspires.ftc.utilities.IMU;
 import org.firstinspires.ftc.utilities.Utils;
 
+import static java.lang.Math.abs;
+
 @TeleOp(name = "Full TeleOp", group = "TeleOp")
 //@Disabled
+//TODO NOT YET CODE REVIEWED, CODE REVIEW BEFORE SCRIMMAGE
 public class FullTeleOp extends OpMode {
 	
 	private final ElapsedTime runtime = new ElapsedTime();
@@ -52,7 +60,7 @@ public class FullTeleOp extends OpMode {
 	private final ElapsedTime armTime = new ElapsedTime();
 	private Gyro gyro;
 	private Controller driver, operator;
-	private MecanumControl robot;
+	private MecanumChassis robot;
 	private WobbleGripper wobble;
 	private Shooter shooter;
 	private DcMotor intake;
@@ -62,7 +70,10 @@ public class FullTeleOp extends OpMode {
 	private FeederState currentFeederState = FeederState.STATE_IDLE;
 	private DriveState currentDriveState = DriveState.STATE_FULL_CONTROL;
 	boolean isFeederLocked = true;
-	
+	long lastCycle = System.currentTimeMillis();
+	double targetAngle = 0;
+	private double directionSetDeadZone = .1;
+	private boolean autoTurnEngaged = true;
 	
 	@Override
 	public void init() {
@@ -80,9 +91,14 @@ public class FullTeleOp extends OpMode {
 		DcMotor frontRight = hardwareMap.get(DcMotor.class, "frontright");
 		DcMotor backLeft = hardwareMap.get(DcMotor.class, "backleft");
 		DcMotor backRight = hardwareMap.get(DcMotor.class, "backright");
+
+		frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+		frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+		backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+		backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 		
-		DcMotor shooterOne = hardwareMap.get(DcMotor.class, "shooter_one");
-		DcMotor shooterTwo = hardwareMap.get(DcMotor.class, "shooter_two");
+		DcMotor shooterOne = hardwareMap.get(DcMotor.class, "shooterone");
+		DcMotor shooterTwo = hardwareMap.get(DcMotor.class, "shootertwo");
 		intake = hardwareMap.get(DcMotor.class, "intake");
 		
 		Utils.setHardwareMap(hardwareMap);
@@ -90,7 +106,7 @@ public class FullTeleOp extends OpMode {
 		gyro = new Gyro(imu, 0);
 		wobble = new WobbleGripper(gripper, lifter);
 		shooter = new Shooter(shooterOne, shooterTwo, feeder, feederLock);
-		robot = new MecanumControl(frontLeft, frontRight, backLeft, backRight, gyro);
+		robot = new MecanumChassis(frontLeft, frontRight, backLeft, backRight, gyro);
 		wobble.armUp();
 	}
 	
@@ -104,6 +120,7 @@ public class FullTeleOp extends OpMode {
 		robot.resetGyro();
 	}
 	
+	@RequiresApi(api = Build.VERSION_CODES.N)
 	@Override
 	public void loop() {
 		
@@ -116,7 +133,8 @@ public class FullTeleOp extends OpMode {
 		driverLeftStick.setShift(0);
 		operatorThumbstickR.setShift(0);
 		operatorThumbstickL.setShift(0);
-		
+
+		/*
 		//gripper state machine
 		switch (currentGripperState) {
 			case STATE_OPEN:
@@ -169,7 +187,7 @@ public class FullTeleOp extends OpMode {
 			case STATE_DOWN:
 				if(operator.LT() > 0 || operator.RT() > 0){
 					newState(ArmState.STATE_FULL_CONTROL);
-					break;
+					break; 
 				}
 				if(operator.up()){
 					newState(ArmState.STATE_UP);
@@ -196,7 +214,8 @@ public class FullTeleOp extends OpMode {
 				}
 				wobble.stopArm();
 		}
-		
+
+		*/
 		//shooter state machine
 		switch (currentShooterState) {
 			case STATE_OFF:
@@ -216,7 +235,7 @@ public class FullTeleOp extends OpMode {
 					newState(ShooterState.STATE_OFF);
 					break;
 				}
-				shooter.setPower(-1.0);
+				shooter.setPower(1.0);
 				telemetry.addData("shooter state = ", "power shot");
 				break;
 			case STATE_POWER_SHOT:
@@ -228,13 +247,13 @@ public class FullTeleOp extends OpMode {
 					newState(ShooterState.STATE_OFF);
 					break;
 				}
-				shooter.setPower(-.75);
+				shooter.setPower(.75);
 				telemetry.addData("shooter state = ", "top goal");
 				break;
 		}
 		
-		telemetry.addData("flywheel rpm = ", Math.abs(shooter.getRPM()));
-		
+		telemetry.addData("flywheel rpm = ", abs(shooter.getRPM()));
+		/*
 		//feeder state machine
 		switch (currentFeederState) {
 			case STATE_IDLE:
@@ -280,6 +299,8 @@ public class FullTeleOp extends OpMode {
 				telemetry.addData("feeder state = ", "reset");
 				break;
 		}
+
+		 */
 		
 		telemetry.addData("feeder lock position = ", shooter.feederLock.getPosition());
 		
@@ -288,10 +309,73 @@ public class FullTeleOp extends OpMode {
 		} else {
 			intake.setPower(0);
 		}
-		
-		
+
 		double precision = (((driver.RT() + 1) / -2) + 1.5);
-		
+
+		//D-pad turning interface
+		{
+			if (driver.upPress()) {
+				targetAngle = GyroUtils.turnTarget(0, gyro.getRawAngle());
+			}
+			if (driver.leftPress()) {
+				targetAngle = GyroUtils.turnTarget(270, gyro.getRawAngle());
+			}
+			if (driver.rightPress()) {
+				targetAngle = GyroUtils.turnTarget(90, gyro.getRawAngle());
+			}
+			if (driver.downPress()) {
+				targetAngle = GyroUtils.turnTarget(180, gyro.getRawAngle());
+			}
+		}
+
+		intake.setPower(operatorThumbstickR.getX());
+
+		telemetry.addData("Turn mode:", driver.triangleToggle() ? "Rate of change" : "Thumbstick position");
+		/*
+		//Thumbstick turn adjustment
+		if(driver.triangleToggle()){
+			targetAngle += (System.currentTimeMillis() - lastCycle) * (driverLeftStick.getInvertedX() * .9);
+		}
+
+		 */
+		//Thumbstick turn adjustment
+		if(driver.triangleToggle()){
+			if(driverLeftStick.getInvertedX() == 0){
+				autoTurnEngaged = true;
+				targetAngle = gyro.getRawAngle();
+			}else{
+				autoTurnEngaged = false;
+			}
+		}
+
+		//Thumbstick direction setting
+		if(!driver.triangleToggle()){
+			autoTurnEngaged = true;
+			if(abs(driverLeftStick.getX()) > directionSetDeadZone || abs(driverLeftStick.getY()) > directionSetDeadZone){
+				targetAngle = GyroUtils.turnTarget(driverLeftStick.getAngle(), gyro.getRawAngle());
+				telemetry.addData("Thumbstick angle: ", driverLeftStick.getAngle());
+			}else{
+				telemetry.addData("Thumbstick angle: ", "angle not being set");
+			}
+		}
+
+		telemetry.addData("Turn target: ", targetAngle % 360);
+		telemetry.addData("Error: ", targetAngle - gyro.getRawAngle());
+		telemetry.addData("Gyro position: ", gyro.getModAngle());
+		telemetry.addData("Gyro position raw: ", gyro.getRawAngle());
+		telemetry.addData("Turn target raw: ", targetAngle);
+
+		//Power setting
+		if(autoTurnEngaged){
+			robot.setPowerAuto(driverRightStick.getInvertedShiftedY(), driverRightStick.getInvertedShiftedX(), targetAngle, precision);
+		}else{
+			robot.setPowerTele(driverRightStick.getInvertedShiftedY(), driverRightStick.getInvertedShiftedX(), driverLeftStick.getInvertedX());
+		}
+
+
+
+		lastCycle = System.currentTimeMillis();
+		/*
 		//drive state machine
 		switch (currentDriveState) {
 			case STATE_FULL_CONTROL:
@@ -382,6 +466,8 @@ public class FullTeleOp extends OpMode {
 		}
 		telemetry.addData("rpm", robot.getRPM());
 		telemetry.update();
+
+		 */
 	}
 	
 	private void newState(DriveState newState) {
