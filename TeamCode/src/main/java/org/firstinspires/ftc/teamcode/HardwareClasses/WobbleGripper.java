@@ -48,7 +48,7 @@ public class WobbleGripper {
         double deltaMili = currentTime - timeRing.getValue(currentTime);
         armPosition = lifter.getPosition() + deltaPosition * deltaMili * ARM_CONTROL_RATE;
         
-        armPosition = Range.clip(armPosition, ARM_UP, ARM_DOWN);
+        armPosition = Range.clip(armPosition, ARM_FOLD, ARM_DOWN);
         
         lifter.setPosition(armPosition);
     }
@@ -86,11 +86,15 @@ public class WobbleGripper {
     
             case STATE_FOLD:
                 if(armControlUp != 0 || armControlDown != 0) { newState(ArmState.STATE_CONTROL); break; }
-                if(armUp) { newState(ArmState.STATE_UP); break; }
+                if(armUp || armFold) { newState(ArmState.STATE_UP); break; }
                 if(armDown) { newState(ArmState.STATE_DOWN); break; }
                 armFold();
                 break;
         }
+    }
+    
+    public void gripperState(boolean openClose, boolean eject){
+    
     }
     
     private void newState(ArmState newState) { currentArmState = newState; }

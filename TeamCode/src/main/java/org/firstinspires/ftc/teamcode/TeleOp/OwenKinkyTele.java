@@ -40,10 +40,11 @@ import org.firstinspires.ftc.teamcode.HardwareClasses.Gyro;
 import org.firstinspires.ftc.teamcode.HardwareClasses.Intake;
 import org.firstinspires.ftc.teamcode.HardwareClasses.MecanumChassis;
 import org.firstinspires.ftc.teamcode.HardwareClasses.Shooter;
+import org.firstinspires.ftc.teamcode.HardwareClasses.WobbleGripper;
 import org.firstinspires.ftc.utilities.IMU;
 import org.firstinspires.ftc.utilities.Utils;
 
-@TeleOp(name = "Kinky TeleOp", group = "TeleOp")
+@TeleOp(name = "Polish", group = "TeleOp")
 //@Disabled
 public class OwenKinkyTele extends OpMode {
 	
@@ -54,7 +55,8 @@ public class OwenKinkyTele extends OpMode {
 	private MecanumChassis robot;
 	private Shooter shooter;
 	private Intake intake;
-	boolean isFeederLocked = true;
+	private WobbleGripper wobble;
+	//boolean isFeederLocked = true;
 	
 	/*private ShooterState currentShooterState = ShooterState.STATE_OFF;
 	private FeederState currentFeederState = FeederState.STATE_IDLE;
@@ -72,6 +74,10 @@ public class OwenKinkyTele extends OpMode {
 		Servo reachOne = hardwareMap.get(Servo.class, "outerrollerone");
 		Servo reachTwo = hardwareMap.get(Servo.class, "outerrollertwo");
 		
+		Servo lifter = hardwareMap.get(Servo.class, "lifter");
+		Servo gripperOne = hardwareMap.get(Servo.class, "gripperone");
+		Servo gripperTwo = hardwareMap.get(Servo.class, "grippertwo");
+		
 		driver = new Controller(gamepad1);
 		operator = new Controller(gamepad2);
 		
@@ -86,10 +92,11 @@ public class OwenKinkyTele extends OpMode {
 		
 		Utils.setHardwareMap(hardwareMap);
 		IMU imu = new IMU("imu");
+		robot = new MecanumChassis(frontLeft, frontRight, backLeft, backRight, gyro);
 		gyro = new Gyro(imu, 0);
 		shooter = new Shooter(shooterOne, shooterTwo, feeder, feederLock);
 		intake = new Intake(intakeDrive, reachOne, reachTwo);
-		robot = new MecanumChassis(frontLeft, frontRight, backLeft, backRight, gyro);
+		wobble = new WobbleGripper(gripperOne, gripperTwo, lifter);
 	}
 	
 	@Override
@@ -97,6 +104,8 @@ public class OwenKinkyTele extends OpMode {
 		intake.retractReach();
 		shooter.lockFeeder();
 		shooter.resetFeeder();
+		shooter.shooterOff();
+		intake.intakeOff();
 	}
 	
 	@Override
@@ -109,23 +118,27 @@ public class OwenKinkyTele extends OpMode {
 	@Override
 	public void loop() {
 		
-		boolean operatorTriangle = operator.trianglePress();  boolean operatorCross = operator.crossPress();  boolean operatorCricle = operator.circlePress();
-		boolean operatorLeft = operator.leftPress();  boolean operatorRight = operator.rightPress();
+		boolean operatorTriangle = operator.trianglePress();
+		boolean operatorCross = operator.crossPress();
+		boolean operatorCircle = operator.circlePress();
+		boolean operatorLeft = operator.leftPress();
+		boolean operatorRight = operator.rightPress();
 		boolean intakeOff = operatorTriangle || (operatorLeft || operatorRight);
-		boolean shooterOff = operatorCross || operatorCricle;
+		boolean shooterOff = operatorCross || operatorCircle;
 		
 		Controller.Thumbstick driverRightStick = driver.getRightThumbstick();
 		Controller.Thumbstick driverLeftStick = driver.getLeftThumbstick();
-		Controller.Thumbstick operatorThumbstickR = operator.getRightThumbstick();
-		Controller.Thumbstick operatorThumbstickL = operator.getLeftThumbstick();
 		
 		driverRightStick.setShift(gyro.getModAngle());
-		driverLeftStick.setShift(0); operatorThumbstickR.setShift(0); operatorThumbstickL.setShift(0);
+		driverLeftStick.setShift(0);
 		
+		robot.driveState(driverRightStick.getY(), driverRightStick.getX(), driverLeftStick.getShiftedX(), driver.RT());
 		shooter.shooterState(operatorTriangle, operatorTriangle || shooterOff, operatorLeft, operatorRight);
 		shooter.feederState(operator.square());
-		intake.intakeState(operatorCross,operatorCross || intakeOff, operatorCricle);
+		intake.intakeState(operatorCross,operatorCross || intakeOff, operatorCircle);
 		intake.reachState(operator.RSPress());
+		wobble.armState(operator.LT(), operator.RT(), operator.upPress(), operator.downPress(), operator.RS());
+		wobble.gripperState(operator.RBPress(), operator.LBPress());
 		
 		//shooter state machine
 		/*switch (currentShooterState) {
