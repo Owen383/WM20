@@ -44,25 +44,18 @@ import org.firstinspires.ftc.teamcode.HardwareClasses.WobbleGripper;
 import org.firstinspires.ftc.utilities.IMU;
 import org.firstinspires.ftc.utilities.Utils;
 
-@TeleOp(name = "Polish", group = "TeleOp")
+@TeleOp(name = "OwenKinkyTele", group = "TeleOp")
 //@Disabled
 public class OwenKinkyTele extends OpMode {
 	
-	private final ElapsedTime runtime = new ElapsedTime();
-	private final ElapsedTime feederTime = new ElapsedTime();
-	private Gyro gyro;
 	private Controller driver, operator;
+	private Controller.Thumbstick driverRightStick, driverLeftStick;
+	
+	private Gyro gyro;
 	private MecanumChassis robot;
 	private Shooter shooter;
 	private Intake intake;
 	private WobbleGripper wobble;
-	//boolean isFeederLocked = true;
-	
-	/*private ShooterState currentShooterState = ShooterState.STATE_OFF;
-	private FeederState currentFeederState = FeederState.STATE_IDLE;
-	private IntakeState currentIntakeState = IntakeState.STATE_OFF;*/
-	private DriveState currentDriveState = DriveState.STATE_FULL_CONTROL;
-	
 	
 	@Override
 	public void init() {
@@ -80,6 +73,9 @@ public class OwenKinkyTele extends OpMode {
 		
 		driver = new Controller(gamepad1);
 		operator = new Controller(gamepad2);
+		driverRightStick = driver.getRightThumbstick();
+		driverLeftStick = driver.getLeftThumbstick();
+		driverLeftStick.setShift(0);
 		
 		DcMotor frontLeft = hardwareMap.get(DcMotor.class, "frontleft");
 		DcMotor frontRight = hardwareMap.get(DcMotor.class, "frontright");
@@ -92,8 +88,9 @@ public class OwenKinkyTele extends OpMode {
 		
 		Utils.setHardwareMap(hardwareMap);
 		IMU imu = new IMU("imu");
-		robot = new MecanumChassis(frontLeft, frontRight, backLeft, backRight, gyro);
+		
 		gyro = new Gyro(imu, 0);
+		robot = new MecanumChassis(frontLeft, frontRight, backLeft, backRight, gyro);
 		shooter = new Shooter(shooterOne, shooterTwo, feeder, feederLock);
 		intake = new Intake(intakeDrive, reachOne, reachTwo);
 		wobble = new WobbleGripper(gripperOne, gripperTwo, lifter);
@@ -106,326 +103,38 @@ public class OwenKinkyTele extends OpMode {
 		shooter.resetFeeder();
 		shooter.shooterOff();
 		intake.intakeOff();
+		robot.setPower(0,0, gamepad1.left_stick_x*-1, .5);
 	}
 	
 	@Override
 	public void start() {
-		runtime.reset();
 		robot.resetGyro();
-		
 	}
 	
 	@Override
 	public void loop() {
-		
-		boolean operatorTriangle = operator.trianglePress();
-		boolean operatorCross = operator.crossPress();
-		boolean operatorCircle = operator.circlePress();
-		boolean operatorLeft = operator.leftPress();
-		boolean operatorRight = operator.rightPress();
-		boolean intakeOff = operatorTriangle || (operatorLeft || operatorRight);
-		boolean shooterOff = operatorCross || operatorCircle;
-		
-		Controller.Thumbstick driverRightStick = driver.getRightThumbstick();
-		Controller.Thumbstick driverLeftStick = driver.getLeftThumbstick();
-		
 		driverRightStick.setShift(gyro.getModAngle());
-		driverLeftStick.setShift(0);
 		
-		robot.driveState(driverRightStick.getY(), driverRightStick.getX(), driverLeftStick.getShiftedX(), driver.RT());
-		shooter.shooterState(operatorTriangle, operatorTriangle || shooterOff, operatorLeft, operatorRight);
+		boolean intakeOff = operator.trianglePressUpdate() || (operator.leftPressUpdate() || operator.rightPressUpdate());
+		boolean shooterOff = operator.crossPressUpdate() || operator.circlePressUpdate();
+		
+		
+		//driver controls
+		robot.driveState(driverRightStick.getInvertedShiftedY(), driverRightStick.getInvertedShiftedX(),
+				driverLeftStick.getInvertedShiftedX(), driver.RT());
+		robot.cardinalState(driver.upPressUpdate(), driver.rightPressUpdate(), driver.downPressUpdate(), driver.leftPressUpdate());
+		robot.adjustmentState(driver.RBPressUpdate(), driver.LBPressUpdate(), 10);
+		
+		
+		//operator controls
+		shooter.shooterState(operator.trianglePress(), operator.trianglePress() || shooterOff, operator.leftPress(), operator.rightPress());
 		shooter.feederState(operator.square());
-		intake.intakeState(operatorCross,operatorCross || intakeOff, operatorCircle);
-		intake.reachState(operator.RSPress());
-		wobble.armState(operator.LT(), operator.RT(), operator.upPress(), operator.downPress(), operator.RS());
-		wobble.gripperState(operator.RBPress(), operator.LBPress());
 		
-		//shooter state machine
-		/*switch (currentShooterState) {
-			case STATE_OFF:
-				if (operator.trianglePress()) {
-					newState(ShooterState.STATE_TOP_GOAL);
-					break;
-				}
-				shooter.setPower(0);
-				telemetry.addData("shooter state = ", "off");
-				break;
-			case STATE_TOP_GOAL:
-				if (operator.left()) {
-					newState(ShooterState.STATE_POWER_SHOT);
-					break;
-				}
-				if (operator.trianglePress()) {
-					newState(ShooterState.STATE_OFF);
-					break;
-				}
-				if (operator.crossPress()) {
-					newState(ShooterState.STATE_OFF);
-					newState(IntakeState.STATE_ON);
-					break;
-				}
-				if (operator.circlePress()) {
-					newState(ShooterState.STATE_OFF);
-					newState(IntakeState.STATE_REVERSE);
-					break;
-				}
-				shooter.topGoal();
-				telemetry.addData("shooter state = ", "top goal");
-				break;
-			case STATE_POWER_SHOT:
-				if (operator.right()) {
-					newState(ShooterState.STATE_TOP_GOAL);
-					break;
-				}
-				if (operator.trianglePress()) {
-					newState(ShooterState.STATE_OFF);
-					break;
-				}
-				if (operator.crossPress()) {
-					newState(ShooterState.STATE_OFF);
-					newState(IntakeState.STATE_ON);
-					break;
-				}
-				if (operator.circlePress()) {
-					newState(ShooterState.STATE_OFF);
-					newState(IntakeState.STATE_REVERSE);
-					break;
-				}
-				shooter.powerShot();
-				telemetry.addData("shooter state = ", "top goal");
-				break;
-		}*/
+		intake.intakeState(operator.crossPress(), operator.crossPress() || intakeOff, operator.circle());
+		intake.reachState(operator.RSPressUpdate());
 		
-		//feeder state machine
-		/*switch (currentFeederState) {
-			case STATE_IDLE:
-				if(feederTime.seconds() > .8){
-					shooter.lockFeeder();
-					isFeederLocked = true;
-				}else{
-					isFeederLocked = false;
-					shooter.unlockFeeder();
-				}
-				if (operator.square()) {
-					newState(FeederState.STATE_FEED);
-					break;
-				}
-				shooter.resetFeeder();
-				
-				telemetry.addData("feeder state = ", "idle");
-				break;
-			case STATE_FEED:
-				if (isFeederLocked) {
-					if (feederTime.seconds() > .3) {
-						newState(FeederState.STATE_RESET);
-						break;
-					}
-					if (feederTime.seconds() > 0.1) {
-						shooter.feedRing();
-					}
-				}else{
-					if (feederTime.seconds() > .2) {
-						newState(FeederState.STATE_RESET);
-						break;
-					}
-					shooter.feedRing();
-				}
-				shooter.unlockFeeder();
-				telemetry.addData("feeder state = ", "feed");
-				break;
-			case STATE_RESET:
-				if (feederTime.seconds() > .15) {
-					newState(FeederState.STATE_IDLE);
-					break;
-				}
-				shooter.resetFeeder();
-				shooter.unlockFeeder();
-				telemetry.addData("feeder state = ", "reset");
-				break;
-		}*/
-		
-		/*if(operator.RSToggle()){
-			intake.deployOuterRoller();
-		}else{
-			intake.retractOuterRoller();
-		}*/
-		
-		//intake state machine
-		/*switch (currentIntakeState) {
-			case STATE_OFF:
-				if (operator.crossPress() && currentShooterState == ShooterState.STATE_OFF) {
-					newState(IntakeState.STATE_ON);
-					break;
-				}
-				if (operator.circlePress()) {
-					newState(IntakeState.STATE_REVERSE);
-					break;
-				}
-				intake.intakeOff();
-				telemetry.addData("intake state = ", "off");
-				break;
-			case STATE_ON:
-				if (operator.circlePress()) {
-					newState(IntakeState.STATE_REVERSE);
-					break;
-				}
-				if ((operator.crossPress() || intake.outerRollerPosition()>.2) || currentShooterState != ShooterState.STATE_OFF) {
-					newState(IntakeState.STATE_OFF);
-					break;
-				}
-				intake.intakeOn();
-				telemetry.addData("intake state  = ", "on");
-				break;
-			case STATE_REVERSE:
-				if ((operator.crossPress() || intake.outerRollerPosition()>.2) || currentShooterState != ShooterState.STATE_OFF) {
-					newState(IntakeState.STATE_OFF);
-					break;
-				}
-				if (operator.circlePress()) {
-					newState(IntakeState.STATE_ON);
-					break;
-				}
-				intake.intakeReverse();
-				telemetry.addData("intake state = ", "reverse");
-				break;
-		}*/
-		
-		
-		double precision = (((driver.RT() + 1) / -2) + 1.5);
-		//drive state machine
-		switch (currentDriveState) {
-			case STATE_FULL_CONTROL:
-				if (driver.up()) {
-					newState(DriveState.STATE_0);
-				}
-				if (driver.left()) {
-					newState(DriveState.STATE_90);
-				}
-				if (driver.down()) {
-					newState(DriveState.STATE_180);
-				}
-				if (driver.right()) {
-					newState(DriveState.STATE_270);
-				} else {
-					robot.setPowerTele(driverRightStick.getInvertedShiftedY(), driverRightStick.getInvertedShiftedX(), driverLeftStick.getInvertedX(), precision);
-				}
-				telemetry.addData("drive state = ", "full control");
-				break;
-			case STATE_0:
-				if ((driverLeftStick.isInput() || gyro.getModAngle() == 0)) {
-					newState(DriveState.STATE_FULL_CONTROL);
-				}
-				if (driver.left()) {
-					newState(DriveState.STATE_90);
-				}
-				if (driver.down()) {
-					newState(DriveState.STATE_180);
-				}
-				if (driver.right()) {
-					newState(DriveState.STATE_270);
-				}
-				
-				robot.setPowerAuto(driverRightStick.getInvertedShiftedY(), driverRightStick.getInvertedShiftedX(), robot.closestTarget(0), precision);
-				telemetry.addData("drive state = ", "0º");
-				break;
-			case STATE_90:
-				if ((driverLeftStick.isInput() || gyro.getModAngle() == 0)) {
-					newState(DriveState.STATE_FULL_CONTROL);
-				}
-				if (driver.up()) {
-					newState(DriveState.STATE_0);
-				}
-				if (driver.down()) {
-					newState(DriveState.STATE_180);
-				}
-				if (driver.right()) {
-					newState(DriveState.STATE_270);
-				}
-				
-				robot.setPowerAuto(driverRightStick.getInvertedShiftedY(), driverRightStick.getInvertedShiftedX(), robot.closestTarget(90), precision);
-				telemetry.addData("drive state = ", "90º");
-				break;
-			case STATE_180:
-				if ((driverLeftStick.isInput() || gyro.getModAngle() == 0)) {
-					newState(DriveState.STATE_FULL_CONTROL);
-				}
-				if (driver.left()) {
-					newState(DriveState.STATE_90);
-				}
-				if (driver.up()) {
-					newState(DriveState.STATE_0);
-				}
-				if (driver.right()) {
-					newState(DriveState.STATE_270);
-				}
-				
-				robot.setPowerAuto(driverRightStick.getInvertedShiftedY(), driverRightStick.getInvertedShiftedX(), robot.closestTarget(180), precision);
-				telemetry.addData("drive state = ", "180º");
-				break;
-			case STATE_270:
-				if ((driverLeftStick.isInput() || gyro.getModAngle() == 0)) {
-					newState(DriveState.STATE_FULL_CONTROL);
-				}
-				if (driver.left()) {
-					newState(DriveState.STATE_90);
-				}
-				if (driver.down()) {
-					newState(DriveState.STATE_180);
-				}
-				if (driver.up()) {
-					newState(DriveState.STATE_0);
-				}
-				
-				robot.setPowerAuto(driverRightStick.getInvertedShiftedY(), driverRightStick.getInvertedShiftedX(), robot.closestTarget(270), precision);
-				telemetry.addData("drive state = ", "270º");
-				break;
-		}
-		
-		telemetry.addData("flywheel rpm = ", shooter.getRPM());
-		telemetry.update();
+		wobble.armState(operator.LT(), operator.RT(), operator.upPressUpdate(), operator.downPressUpdate(), operator.LSPressUpdate());
+		wobble.gripperState(operator.RBPressUpdate(), operator.LBPressUpdate());
 	}
 	
-	private void newState(DriveState newState) {
-		currentDriveState = newState;
-	}
-	
-	/*private void newState(ShooterState newState) {
-		currentShooterState = newState;
-	}*/
-	
-	/*private void newState(FeederState newState) {
-		currentFeederState = newState;
-		feederTime.reset();
-	}*/
-	
-	/*private void newState(IntakeState newState) {
-		currentIntakeState = newState;
-	}*/
-	
-	private enum DriveState {
-		STATE_FULL_CONTROL,
-		STATE_0,
-		STATE_90,
-		STATE_180,
-		STATE_270
-	}
-	
-	/*private enum ShooterState {
-		STATE_OFF,
-		STATE_TOP_GOAL,
-		STATE_POWER_SHOT
-	}*/
-	
-	/*private enum IntakeState {
-		STATE_OFF,
-		STATE_ON,
-		STATE_REVERSE
-	}*/
-	
-	/*private enum FeederState {
-		STATE_IDLE,
-		STATE_RESET,
-		STATE_FEED
-	}*/
 }
-

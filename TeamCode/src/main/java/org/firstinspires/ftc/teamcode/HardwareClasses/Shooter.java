@@ -14,7 +14,7 @@ public class Shooter {
     private DcMotor shooterTwo;
     private Servo feeder;
     private Servo feederLock;
-    private PID shooterPID = new PID(.0006, 0, .00026, 50, false);
+    private PID shooterPID = new PID(.0006, 0, .0001, 50, false);
 
     private static final double TICKS_PER_ROTATION = 28;
     private static final double RING_FEED = 0.05;
@@ -60,6 +60,35 @@ public class Shooter {
     
     public void unlockFeeder(){
         feederLock.setPosition(FEEDER_UNLOCK);
+    }
+    
+    public void feederState(boolean trigger){
+        switch (currentFeederState) {
+            
+            case STATE_IDLE:
+                if(trigger && currentShooterState != ShooterState.STATE_OFF){ newState(FeederState.STATE_FEED); }
+                if(feederTime.seconds() > .8){ lockFeeder(); isFeederLocked = false; }
+                else{ unlockFeeder(); isFeederLocked = false; }
+                resetFeeder();
+                break;
+            
+            case STATE_FEED:
+                if (isFeederLocked) {
+                    if (feederTime.seconds() > .3) { newState(FeederState.STATE_RESET); }
+                    if (feederTime.seconds() > 0.1) { feedRing(); }
+                }else{
+                    if (feederTime.seconds() > .2) { newState(FeederState.STATE_RESET); }
+                    feedRing();
+                }
+                unlockFeeder();
+                break;
+            
+            case STATE_RESET:
+                if (feederTime.seconds() > .15) { newState(FeederState.STATE_IDLE); break; }
+                resetFeeder();
+                unlockFeeder();
+                break;
+        }
     }
     
 
@@ -141,34 +170,7 @@ public class Shooter {
     }
     
     
-    public void feederState(boolean trigger){
-        switch (currentFeederState) {
-            
-            case STATE_IDLE:
-                if(trigger && currentShooterState != ShooterState.STATE_OFF){ newState(FeederState.STATE_FEED); }
-                if(feederTime.seconds() > .8){ lockFeeder(); isFeederLocked = false; }
-                else{ unlockFeeder(); isFeederLocked = false; }
-                resetFeeder();
-                break;
-                
-            case STATE_FEED:
-                if (isFeederLocked) {
-                    if (feederTime.seconds() > .3) { newState(FeederState.STATE_RESET); }
-                    if (feederTime.seconds() > 0.1) { feedRing(); }
-                }else{
-                    if (feederTime.seconds() > .2) { newState(FeederState.STATE_RESET); }
-                    feedRing();
-                }
-                unlockFeeder();
-                break;
-                
-            case STATE_RESET:
-                if (feederTime.seconds() > .15) { newState(FeederState.STATE_IDLE); break; }
-                resetFeeder();
-                unlockFeeder();
-                break;
-        }
-    }
+    
     
     private void newState(FeederState newState) {
         currentFeederState = newState;

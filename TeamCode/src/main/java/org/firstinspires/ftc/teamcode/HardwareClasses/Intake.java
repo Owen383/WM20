@@ -34,6 +34,21 @@ public class Intake {
         reachTwo.setPosition(-DEPLOYED+1);
     }
     
+    public void reachState(boolean deployToggle){
+        switch (currentReachState) {
+            
+            case STATE_RETRACT:
+                if (deployToggle) { newState(ReachState.STATE_DEPLOY); break; }
+                retractReach();
+                break;
+            
+            case STATE_DEPLOY:
+                if (deployToggle) { newState(ReachState.STATE_RETRACT); newState(IntakeState.STATE_OFF); break; }
+                deployReach();
+                break;
+        }
+    }
+    
 
     public void intakeOn(){ intakeDrive.setPower(INTAKE_ON); }
 
@@ -41,45 +56,25 @@ public class Intake {
 
     public void intakeReverse(){ intakeDrive.setPower(INTAKE_ON * -INTAKE_REVERSE); }
     
-    
     public void intakeState(boolean intakeOn, boolean intakeOff, boolean intakeReverse){
         switch (currentIntakeState) {
             
             case STATE_OFF:
                 if (intakeOn) { newState(IntakeState.STATE_ON); newState(ReachState.STATE_DEPLOY); break; }
-                if (intakeReverse) { newState(IntakeState.STATE_REVERSE); newState(ReachState.STATE_DEPLOY); break; }
+                if (intakeReverse) { intakeReverse(); newState(ReachState.STATE_DEPLOY); break; }
                 intakeOff();
                 break;
                 
             case STATE_ON:
-                if (intakeReverse) { newState(IntakeState.STATE_REVERSE); break; }
+                if (intakeReverse) { intakeReverse(); break; }
                 if (intakeOff) { newState(IntakeState.STATE_OFF); break; }
                 intakeOn();
                 break;
-                
-            case STATE_REVERSE:
-                if (intakeOff) { newState(IntakeState.STATE_OFF); break; }
-                if (intakeReverse) { newState(IntakeState.STATE_ON); break; }
-                intakeReverse();
-                break;
         }
     }
     
     
-    public void reachState(boolean deployToggle){
-        switch (currentReachState) {
-        
-            case STATE_RETRACT:
-                if (deployToggle) { newState(ReachState.STATE_DEPLOY); break; }
-                deployReach();
-                break;
-        
-            case STATE_DEPLOY:
-                if (deployToggle) { newState(ReachState.STATE_RETRACT); newState(IntakeState.STATE_OFF); break; }
-                retractReach();
-                break;
-        }
-    }
+    
     
     private void newState(IntakeState newState) {
         currentIntakeState = newState;

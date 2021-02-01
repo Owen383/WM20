@@ -56,7 +56,7 @@ public class OwenKinkyAuto extends OpMode {
 	}
 	
 	public void init_loop(){
-		intake.retractOuterRoller();
+		intake.retractReach();
 		intake.intakeOff();
 	}
 	
@@ -75,7 +75,7 @@ public class OwenKinkyAuto extends OpMode {
 				robot.strafe(3500,0,0,1,.5,.5,1);
 				
 				if(robot.currentTicks>1000) {
-					intake.deployOuterRoller();
+						intake.deployReach();
 					intake.intakeOn();
 				}
 				if(robot.isStrafeFinished){
@@ -84,7 +84,7 @@ public class OwenKinkyAuto extends OpMode {
 				break;
 			case STATE_SHOOT:
 				robot.setPower(0,0,0,0);
-				intake.retractOuterRoller();
+				intake.retractReach();
 				intake.intakeOff();
 				shooter.topGoal();
 				if(shooter.updateRPM() > 3200 && shooter.updateRPM() < 3400){

@@ -50,9 +50,9 @@ public class MecanumAutoEncoder extends LinearOpMode {
 
             switch(currentGripperState){
                 case STATE_OPEN:
-                    if(controller.RBPress()){
+                    if(controller.RBPressUpdate()){
                         newState(GripperState.STATE_GRIP);
-                    }else if(controller.LBPress()) {
+                    }else if(controller.LBPressUpdate()) {
                         newState(GripperState.STATE_EJECT);
                     }else{
                         gripper.setPosition(0.75);
@@ -60,9 +60,9 @@ public class MecanumAutoEncoder extends LinearOpMode {
                     }
                     break;
                 case STATE_GRIP:
-                    if(controller.RBPress()){
+                    if(controller.RBPressUpdate()){
                         newState(GripperState.STATE_OPEN);
-                    }else if(controller.LBPress()) {
+                    }else if(controller.LBPressUpdate()) {
                         newState(GripperState.STATE_EJECT);
                     }else{
                         gripper.setPosition(0.25);

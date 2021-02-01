@@ -41,6 +41,10 @@ public class WobbleGripper {
     
     public void wheelEject() { gripperOne.setDirection(Servo.Direction.REVERSE); }
     
+    public void gripperState(boolean openClose, boolean eject){
+    
+    }
+    
 
     public void armControl(double deltaPosition){
         
@@ -93,9 +97,7 @@ public class WobbleGripper {
         }
     }
     
-    public void gripperState(boolean openClose, boolean eject){
     
-    }
     
     private void newState(ArmState newState) { currentArmState = newState; }
     

@@ -219,7 +219,7 @@ public class FullTeleOp extends OpMode {
 		//shooter state machine
 		switch (currentShooterState) {
 			case STATE_OFF:
-				if (operator.trianglePress()) {
+				if (operator.trianglePressUpdate()) {
 					newState(ShooterState.STATE_TOP_GOAL);
 					break;
 				}
@@ -231,7 +231,7 @@ public class FullTeleOp extends OpMode {
 					newState(ShooterState.STATE_POWER_SHOT);
 					break;
 				}
-				if (operator.trianglePress()) {
+				if (operator.trianglePressUpdate()) {
 					newState(ShooterState.STATE_OFF);
 					break;
 				}
@@ -243,7 +243,7 @@ public class FullTeleOp extends OpMode {
 					newState(ShooterState.STATE_TOP_GOAL);
 					break;
 				}
-				if (operator.trianglePress()) {
+				if (operator.trianglePressUpdate()) {
 					newState(ShooterState.STATE_OFF);
 					break;
 				}
@@ -312,16 +312,16 @@ public class FullTeleOp extends OpMode {
 
 		//D-pad turning interface
 		{
-			if (driver.upPress()) {
+			if (driver.upPressUpdate()) {
 				targetAngle = GyroUtils.turnTarget(0, gyro.getRawAngle());
 			}
-			if (driver.leftPress()) {
+			if (driver.leftPressUpdate()) {
 				targetAngle = GyroUtils.turnTarget(270, gyro.getRawAngle());
 			}
-			if (driver.rightPress()) {
+			if (driver.rightPressUpdate()) {
 				targetAngle = GyroUtils.turnTarget(90, gyro.getRawAngle());
 			}
-			if (driver.downPress()) {
+			if (driver.downPressUpdate()) {
 				targetAngle = GyroUtils.turnTarget(180, gyro.getRawAngle());
 			}
 		}
