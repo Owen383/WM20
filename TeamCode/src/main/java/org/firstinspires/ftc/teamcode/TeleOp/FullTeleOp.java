@@ -104,7 +104,7 @@ public class FullTeleOp extends OpMode {
 		Utils.setHardwareMap(hardwareMap);
 		IMU imu = new IMU("imu");
 		gyro = new Gyro(imu, 0);
-		wobble = new WobbleGripper(gripper, lifter);
+		/*wobble = new WobbleGripper(gripper, lifter);*/
 		shooter = new Shooter(shooterOne, shooterTwo, feeder, feederLock);
 		robot = new MecanumChassis(frontLeft, frontRight, backLeft, backRight, gyro);
 		wobble.armUp();
@@ -252,7 +252,7 @@ public class FullTeleOp extends OpMode {
 				break;
 		}
 		
-		telemetry.addData("flywheel rpm = ", abs(shooter.getRPM()));
+		telemetry.addData("flywheel rpm = ", abs(shooter.updateRPM()));
 		/*
 		//feeder state machine
 		switch (currentFeederState) {

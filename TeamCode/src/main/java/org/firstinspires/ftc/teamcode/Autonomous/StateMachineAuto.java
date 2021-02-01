@@ -138,7 +138,7 @@ public class StateMachineAuto extends OpMode {
                 }
                 wobble.stopArm();
         }
-		shooter.off();
+		shooter.shooterOff();
 	}
 	
 	public void start() {
