@@ -125,11 +125,10 @@ public class OwenKinkyTele extends OpMode {
 		
 		
 		//driver controls
+		robot.setCardinalAngle(driver.upPressUpdate(), driver.rightPressUpdate(), driver.downPressUpdate(), driver.leftPressUpdate());
+		robot.setTargetAngle(driverLeftStick);
 		robot.driveState(driverRightStick.getInvertedShiftedY(), driverRightStick.getInvertedShiftedX(),
-				driverLeftStick.getInvertedShiftedX(), driver.RT());
-		robot.cardinalState(driver.upPressUpdate(), driver.rightPressUpdate(), driver.downPressUpdate(), driver.leftPressUpdate());
-		robot.adjustmentState(driver.RBPressUpdate(), driver.LBPressUpdate(), 10);
-		
+				driverLeftStick.getInvertedShiftedX(), driver.RT(), driver.triangleToggle());
 		
 		//operator controls
 		shooter.shooterState(operator.trianglePress(), operator.trianglePress() || shooterOff, operator.leftPress(), operator.rightPress());
